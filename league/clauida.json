@@ -1,0 +1,11 @@
+{
+    "lambda": {
+      "role": "arn:aws:iam::099811887654:role/LambdaAPIExecutor",
+      "name": "league",
+      "region": "us-east-2",
+      "sharedRole": true
+    },
+    "api": {
+      "id": "ot8u65d5oc"
+    }
+  } 
