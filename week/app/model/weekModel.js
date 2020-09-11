@@ -20,9 +20,16 @@ Week.getWeek = function getWeek(season, week, seasonType, user, result){
     });
 
     getWeekSQL.then(function(data, err) {
-        if(err) result(err, null);
+        if(err) {
+            console.log(err);
+            result(err, null);
+        }
         Week.weekMapper(data, season, week, seasonType, function(errMapping, weekObject){
-            if(errMapping) result(errMapping, null);
+            if(errMapping) {
+                console.log(errMapping);
+                result(errMapping, null);
+            }
+            console.log(weekObject);
             result(null, weekObject);
         });
     });
@@ -30,13 +37,17 @@ Week.getWeek = function getWeek(season, week, seasonType, user, result){
 
 Week.getCurrentWeek = function getCurrentWeek(req, result) {
     League.leagueSettings(function(err,settings){
-        if(err) result(err, null);
+        if(err) {
+            console.log(err);
+            result(err, null);
+        }
                 
         var currWeekObj = {};
         currWeekObj.season = settings.currentSeason;
         currWeekObj.week = settings.currentWeek;
         currWeekObj.seasonType = settings.currentSeasonType;
     
+        console.log(currWeekObj);
         result(null, currWeekObj);
     });
 }
@@ -70,11 +81,14 @@ Week.getWeekSQL = function getWeekSQL(season, week, seasonType, user, result) {
         ], function(err, data){
         
         if(err) { 
+            console.log(err);
             result(err, null);
         } else {
+            console.log(data);
             result(null, data);
         }
     });
+    sql.end();
 };
 
 Week.weekMapper = function(games, season, week, seasonType, result) {

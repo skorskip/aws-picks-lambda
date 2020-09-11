@@ -24,10 +24,18 @@ var Game = function(game){
 Game.getGamesById = function getGamesById(listGameIds, result) {
     if(listGameIds.length > 0) {
         sql.query("Select * from games where game_id in (?) ORDER BY start_time", [listGameIds], function (err, res) {
-            if(err) result(err, null);
-            else result(null, res);
+            if(err) { 
+                console.log(err);
+                result(err, null);
+            }
+            else {
+                console.log(res);
+                result(null, res);
+            }
         });
+        sql.end();
     } else {
+        console.log("[]");
         result(null, []);
     }
 };

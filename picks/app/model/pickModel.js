@@ -20,13 +20,18 @@ Pick.getUsersPicksByWeek = function getUsersPicksByWeek(userId, season, week, se
         "AND p.user_id = ? " +
         "AND g.pick_submit_by_date < ?", [season, week, seasonType, userId, new Date()], function(err, res){
         
-        if(err) result(err, null);
+        if(err) {
+            console.log(err);
+            result(err, null);
+        }
         else {
             Pick.picksObjectMapper(res, function(mapppingErr, picksObject){
+                console.log(picksObject);
                 result(null, picksObject);
             });
         }
     });
+    sql.end();
 }
 
 Pick.getPicksByWeek = function getPicksByWeek(user, season, week, seasonType, result) {
@@ -41,13 +46,18 @@ Pick.getPicksByWeek = function getPicksByWeek(user, season, week, seasonType, re
         "AND u.user_id = ? " +
         "AND u.password = ?", [season, week, seasonType, user.user_id, user.password], function(err, res) {
 
-        if(err) result(err, null);
+        if(err) {
+            console.log(err);
+            result(err, null);
+        }
         else {
             Pick.picksObjectMapper(res, function(mapppingErr, picksObject){
+                console.log(picksObject);
                 result(null, picksObject);
             });
         }
     });
+    sql.end();
 }
 
 Pick.getWeekPicksByGame = function getWeekPicksByGame(season, week, seasonType, result) {
@@ -60,15 +70,18 @@ Pick.getWeekPicksByGame = function getWeekPicksByGame(season, week, seasonType, 
         "AND g.season = ? " +
         "AND g.season_type = ?", [week, season, seasonType], function(err, res) {
 
-        if(err) result(err, null);
+        if(err) {
+            console.log(err);
+            result(err, null);
+        }
         else {
             res.forEach(game => {
                 promises_array.push(new Promise((resolve, reject) => {
                     Pick.getPicksByGame(game.game_id, function(errPickByGame, picksByGameRes){
                         if(errPickByGame) {
+                            console.log(err);
                             result(err, null);
                             reject();
-
                         }
                         else {
                             weekPicksObject[game.game_id] = picksByGameRes;
@@ -79,10 +92,12 @@ Pick.getWeekPicksByGame = function getWeekPicksByGame(season, week, seasonType, 
             });
 
             Promise.all(promises_array).then(()=>{
+                console.log(weekPicksObject);
                 return result(null, weekPicksObject);
             });
         }
     });
+    sql.end();
 }
 
 Pick.getPicksByGame = function getPicksByGame(gameId, result) {
@@ -94,24 +109,40 @@ Pick.getPicksByGame = function getPicksByGame(gameId, result) {
         "AND g.game_id = p.game_id " +
         "AND g.pick_submit_by_date < ? order by u.first_name, u.last_name", [gameId, new Date()], function(err, res){
 
-        if(err) result(err, null);
-        else result(null, res);
+        if(err) {
+            console.log(err);
+            result(err, null);
+        }
+        else {
+            console.log(res);
+            result(null, res);
+        }
     });
+    sql.end();
 }
 
 Pick.addPicks = function addPicks(picks, result) {
     this.checkPicksDateValid(picks, function(errorCheckDate, valid) {
         if(errorCheckDate) {
+            console.log(errorCheckDate);
             result(errorCheckDate, null);
         } else if(valid) {
             let keys = Object.keys(picks[0]);
             let values = picks.map( obj => keys.map( key => obj[key]));
             let query = 'INSERT INTO picks (' + keys.join(',') + ') VALUES ?';
             sql.query(query, [values], function(err, res) {
-                if(err) result(null, err);
-                else result(null, "SUCCESS");
+                if(err) {
+                    console.log(err);
+                    result(null, err);
+                }
+                else {
+                    console.log("SUCCESS")
+                    result(null, "SUCCESS");
+                }
             });
+            sql.end();
         } else {
+            console.log("PAST SUBMISSION DATE")
             result(null, "PAST SUBMISSION DATE")
         }
     });
@@ -119,16 +150,30 @@ Pick.addPicks = function addPicks(picks, result) {
 
 Pick.getPick = function getPick(id, result) {
     sql.query("SELECT * FROM picks WHERE pick_id = ?", id, function(err, res) {
-        if(err) result(err, null);
-        else result(null, res);
+        if(err) {
+            console.log(err);
+            result(err, null);
+        }
+        else {
+            console.log(res);
+            result(null, res);
+        }
     });
+    sql.end();
 }
 
 Pick.deletePick = function deletePick(id, result) {
     sql.query("DELETE FROM picks WHERE pick_id = ?", id, function(err, res) {
-        if(err) result(err, null);
-        else result(null, "SUCCESS");
+        if(err) {
+            console.log(err);
+            result(err, null);
+        }
+        else {
+            console.log("SUCCESS")
+            result(null, "SUCCESS");
+        }
     });
+    sql.end();
 }
 
 Pick.updatePick = function updatePick(id, pick, result) {
@@ -137,14 +182,23 @@ Pick.updatePick = function updatePick(id, pick, result) {
 
     this.checkPicksDateValid(picks, function(errorCheckDate, valid) {
         if(errorCheckDate) {
+            console.log(errorCheckDate);
             result(errorCheckDate, null);
         } else {
             if(valid) {
                 sql.query("UPDATE picks SET team_id = ? WHERE pick_id = ?", [pick.team_id, id], function(err, res) {
-                    if(err) result(err, null);
-                    else result(null, "SUCCESS");
+                    if(err) {
+                        console.log(err)
+                        result(err, null);
+                    }
+                    else {
+                        console.log("SUCCESS")
+                        result(null, "SUCCESS");
+                    }
                 });
+                sql.end();
             } else {
+                console.log("PAST SUBMISSION DATE")
                 result(null, "PAST SUBMISSION DATE");
             }
         }
@@ -158,9 +212,15 @@ Pick.checkPicksDateValid = function checkPicksDateValid(picks, result) {
     }
 
     sql.query("SELECT COUNT(*) as count FROM games WHERE game_id in (?) AND pick_submit_by_date < ?", [gameArray, new Date()], function(err, res) {
-        if(err) result(err, null);
-        else result(null,res[0].count == 0);
-    })
+        if(err) {
+            console.log(err);
+            result(err, null);
+        }
+        else {
+            result(null,res[0].count == 0);
+        }
+    });
+    sql.end();
 }
 
 Pick.picksObjectMapper = function picksObjectMapper(picks, result) {

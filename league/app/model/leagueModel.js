@@ -8,9 +8,16 @@ League.leagueSettings = function leagueSettings(result){
         'SELECT settings ' +
         'FROM config ' +
         'WHERE status = "active"', [], function(err, res){
-            if(err) result(err, null);
-            else result(null, JSON.parse(res[0].settings));
+            if(err) {
+                console.log(err);
+                result(err, null);
+            }
+            else {
+                console.log(JSON.parse(res[0].settings));
+                result(null, JSON.parse(res[0].settings));
+            }
     });
+    sql.end();
 };
 
 module.exports = League;

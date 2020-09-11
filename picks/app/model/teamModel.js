@@ -13,13 +13,20 @@ var Team = function(team){
 Team.getTeamsById = function getTeamsById(teamIds, result) {
     if(teamIds.length > 0) {
         sql.query("SELECT * FROM teams WHERE team_id in (?)", [teamIds], function(err, res){
-            if(err) result(err, null);
-            else result(null, res);
+            if(err) {
+                console.log(err);
+                result(err, null);
+            }
+            else {
+                console.log(res);
+                result(null, res);
+            }
         });
+        sql.end();
     } else {
+        console.log("[]");
         result(null, []);
     }
 }
 
 module.exports= Team;
-
