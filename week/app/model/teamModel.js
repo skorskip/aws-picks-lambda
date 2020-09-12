@@ -22,7 +22,6 @@ Team.getTeamsById = function getTeamsById(teamIds, result) {
                 result(null, res);
             }
         });
-        sql.end();
     } else {
         console.log("[]");
         result(null, []);

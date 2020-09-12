@@ -17,7 +17,6 @@ League.leagueSettings = function leagueSettings(result){
                 result(null, JSON.parse(res[0].settings));
             }
     });
-    sql.end();
 };
 
 module.exports = League;

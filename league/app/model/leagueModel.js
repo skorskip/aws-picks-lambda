@@ -8,6 +8,7 @@ League.leagueSettings = function leagueSettings(result){
         'SELECT settings ' +
         'FROM config ' +
         'WHERE status = "active"', [], function(err, res){
+            sql.end();
             if(err) {
                 console.log(err);
                 result(err, null);
@@ -17,7 +18,6 @@ League.leagueSettings = function leagueSettings(result){
                 result(null, JSON.parse(res[0].settings));
             }
     });
-    sql.end();
 };
 
 module.exports = League;

@@ -33,7 +33,6 @@ Game.getGamesById = function getGamesById(listGameIds, result) {
                 result(null, res);
             }
         });
-        sql.end();
     } else {
         console.log("[]");
         result(null, []);

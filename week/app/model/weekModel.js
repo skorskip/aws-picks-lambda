@@ -14,7 +14,7 @@ var Week = function(week){
 Week.getWeek = function getWeek(season, week, seasonType, user, result){
     var getWeekSQL = new Promise((resolve, reject) => {
         Week.getWeekSQL(season, week, seasonType, user, function(err, data){
-            if(err) reject(result(err, null));  
+            if(err) reject(err);  
             resolve(data);
         });
     });
@@ -88,7 +88,6 @@ Week.getWeekSQL = function getWeekSQL(season, week, seasonType, user, result) {
             result(null, data);
         }
     });
-    sql.end();
 };
 
 Week.weekMapper = function(games, season, week, seasonType, result) {

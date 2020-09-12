@@ -11,6 +11,7 @@ var User = function(user) {
 }
 
 User.updateUser = function updateUser(userId, user, result) {
+    sql.end();
     sql.query('UPDATE users SET ' +
     'user_name = ?, ' + 
     'first_name = ?, ' +
@@ -38,11 +39,11 @@ User.updateUser = function updateUser(userId, user, result) {
             }
         }
     });
-    sql.end();
 };
 
 User.deleteUser = function deleteUser(userId, result) {
     sql.query('DELETE FROM users WHERE user_id = ?', userId, function(err, res) {
+        sql.end();
         if(err) {
             console.log(err);
             result(err, null);
@@ -52,11 +53,11 @@ User.deleteUser = function deleteUser(userId, result) {
             result(null, res);
         }
     });
-    sql.end();
 };
 
 User.createUser = function createUser(user, result) {
     sql.query('INSERT INTO users SET ?', user, function(err, res) {
+        sql.end();
         if(err) {
             console.log('FAILURE');
             result(null, 'FAILURE');
@@ -66,7 +67,6 @@ User.createUser = function createUser(user, result) {
             result(null, 'SUCCESS');
         }
     });
-    sql.end();
 };
 
 User.login = function login(userPass, result) {
@@ -74,6 +74,7 @@ User.login = function login(userPass, result) {
         'FROM users ' +
         'WHERE (LOWER(user_name) = ? OR email = ?) ' +
         'AND sha2(concat(password_salt,?),256) = password', [userPass.user_name.toLowerCase(), userPass.user_name, userPass.password], function(err, res) {
+        sql.end();
         if(err) {
             console.log(err);
             result(err, null);
@@ -83,7 +84,6 @@ User.login = function login(userPass, result) {
             result(null,res);
         }
     });
-    sql.end();
 };
 
 User.standings = function standings(season, seasonType, result) {
@@ -93,6 +93,7 @@ User.standings = function standings(season, seasonType, result) {
         'WHERE season = ? ' +
         'AND season_type = ? ' +
         'ORDER BY ranking, wins desc, tie_breaks desc', [season, seasonType], function(err, res) {
+            sql.end();
             if(err) {
                 console.log(err);
                 result(err, null);
@@ -102,7 +103,6 @@ User.standings = function standings(season, seasonType, result) {
                 result(null, res);
             }
         });
-    sql.end();
 };
 
 User.standingsByUser = function standingsByUser(season, seasonType, user, result) {
@@ -113,6 +113,7 @@ User.standingsByUser = function standingsByUser(season, seasonType, user, result
         'AND season_type = ? ' +
         'AND user_id = ? ' +
         'ORDER BY ranking, wins desc, tie_breaks desc', [season, seasonType, user.user_id], function(err, res) {
+            sql.end();
             if(err) {
                 console.log(err);
                 result(err, null);
@@ -122,7 +123,6 @@ User.standingsByUser = function standingsByUser(season, seasonType, user, result
                 result(null, res);
             }
         });
-    sql.end();
 };  
 
 module.exports = User;
