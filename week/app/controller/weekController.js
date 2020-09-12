@@ -1,5 +1,4 @@
 'use strict';
-var sql = require('../model/db.js');
 var Week = require('../model/weekModel.js');
 
 exports.getCurrentWeek = function(req, res) {

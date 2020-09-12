@@ -1,7 +1,8 @@
-'user strict';
-var sql = require('./db.js');
+'user strict'
 var Team = require('./teamModel.js');
 var League = require('./leagueModel');
+var mysql = require('mysql');
+var config = require('../../config.json');
 
 
 var Week = function(week){
@@ -53,41 +54,51 @@ Week.getCurrentWeek = function getCurrentWeek(req, result) {
 }
 
 Week.getWeekSQL = function getWeekSQL(season, week, seasonType, user, result) {
-    sql.query(
-        "SELECT * FROM games " +
-        "WHERE season = ? " + 
-        "AND week = ? " + 
-        "AND season_type = ? " +
-        "AND home_spread is not NULL " +
-        "AND game_id NOT IN (" +
-            "SELECT p.game_id " +
-            "FROM picks p, users u, games g " +
-            "WHERE g.game_id = p.game_id " + 
-            "AND g.season = ? " + 
-            "AND g.week = ? " +
-            "AND g.season_type = ? " +
-            "AND p.user_id = u.user_id " +
-            "AND u.user_id = ? " +
-            "AND u.password = ?)" + 
-        "ORDER BY start_time", [
-            season, 
-            week, 
-            seasonType, 
-            season, 
-            week, 
-            seasonType,
-            user.user_id, 
-            user.password
-        ], function(err, data){
-        
+    var sql = mysql.createConnection(config.database);
+
+    sql.connect(function(err){
         if(err) { 
             console.log(err);
             result(err, null);
-        } else {
-            console.log(data);
-            result(null, data);
-        }
+        } 
+
+        sql.query(
+            "SELECT * FROM games " +
+            "WHERE season = ? " + 
+            "AND week = ? " + 
+            "AND season_type = ? " +
+            "AND home_spread is not NULL " +
+            "AND game_id NOT IN (" +
+                "SELECT p.game_id " +
+                "FROM picks p, users u, games g " +
+                "WHERE g.game_id = p.game_id " + 
+                "AND g.season = ? " + 
+                "AND g.week = ? " +
+                "AND g.season_type = ? " +
+                "AND p.user_id = u.user_id " +
+                "AND u.user_id = ? " +
+                "AND u.password = ?)" + 
+            "ORDER BY start_time", [
+                season, 
+                week, 
+                seasonType, 
+                season, 
+                week, 
+                seasonType,
+                user.user_id, 
+                user.password
+            ], function(err, data){
+            sql.destroy();
+            if(err) { 
+                console.log(err);
+                result(err, null);
+            } else {
+                console.log(data);
+                result(null, data);
+            }
+        });
     });
+    
 };
 
 Week.weekMapper = function(games, season, week, seasonType, result) {
