@@ -1,6 +1,6 @@
 'use strict'
 var mysql = require('mysql');
-var config = require('../../config.json');
+var config = require('./db');
 var League = function(){}
 
 League.leagueSettings = function leagueSettings(result){

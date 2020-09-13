@@ -1,6 +1,6 @@
 'user strict';
 var mysql = require('mysql');
-var config = require('../../config.json');
+var config = require('./db');
 
 var Team = function(team){
     this.team_city          = team.team_city;
