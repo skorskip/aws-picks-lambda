@@ -280,7 +280,7 @@ Pick.checkPicksDateValid = function checkPicksDateValid(picks, result) {
             console.log(err);
             result(err, null);
         }
-        sql.query("SELECT COUNT(*) as count FROM games WHERE game_id in (?) AND pick_submit_by_date < ?", [gameArray, new Date()], function(err, res) {
+        sql.query("SELECT COUNT(*) as count FROM games WHERE game_id in (?) AND pick_submit_by_date < ?", [gameArray, new Date().toISOString()], function(err, res) {
             sql.destroy();
             if(err) {
                 console.log(err);
