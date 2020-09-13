@@ -1,4 +1,8 @@
 config.json
+<<<<<<< HEAD
 config.pskorski.json
 config.skorskip.json
 */config.json
+=======
+config.*.json
+>>>>>>> aws-pskorski

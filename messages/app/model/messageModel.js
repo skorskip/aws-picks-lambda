@@ -6,7 +6,10 @@ var Message = function(){}
 
 Message.announcements = function announcements(body, result){
     League.leagueSettings(function(err, settings){
-        if(err) result(err, null)
+        if(err) {
+            console.log(err);
+            result(err, null);
+        }
 
         const token = settings.messageSource.token;
         const web = new WebClient(token);
@@ -56,9 +59,9 @@ Message.announcements = function announcements(body, result){
             }
     
             responseObject.announcement_date = new Date(lastestTs * 1000);
+            console.log(responseObject);
             result(null, responseObject);
         })();
-
     });
 }
 

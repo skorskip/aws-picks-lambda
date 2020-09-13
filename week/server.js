@@ -10,6 +10,5 @@ app.use(bodyParser.json());
 
 app.get('/current', (req, res) => week.getCurrentWeek(req, res));
 app.post('/season/:season/seasonType/:seasonType/week/:week', (req, res) => week.getWeek(req, res));
-//app.post('/season', (req, res) => week.getWeek(req, res));
 
 module.exports = app;

@@ -1,5 +1,6 @@
 'user strict';
-var sql = require('./db.js');
+var mysql = require('mysql');
+var config = require('../../config.json');
 
 var Team = function(team){
     this.team_city          = team.team_city;
@@ -11,15 +12,31 @@ var Team = function(team){
 };
 
 Team.getTeamsById = function getTeamsById(teamIds, result) {
+
     if(teamIds.length > 0) {
-        sql.query("SELECT * FROM teams WHERE team_id in (?)", [teamIds], function(err, res){
-            if(err) result(err, null);
-            else result(null, res);
+        var sql = mysql.createConnection(config.database);
+
+        sql.connect(function(err){
+            if(err) {
+                console.log(err);
+                result(err, null);
+            }
+            sql.query("SELECT * FROM teams WHERE team_id in (?)", [teamIds], function(err, res){
+                sql.destroy();
+                if(err) {
+                    console.log(err);
+                    result(err, null);
+                }
+                else {
+                    console.log(res);
+                    result(null, res);
+                }
+            });
         });
     } else {
+        console.log("[]");
         result(null, []);
     }
 }
 
 module.exports= Team;
-
