@@ -137,7 +137,7 @@ Pick.getPicksByGame = function getPicksByGame(gameId, result) {
             "AND p.game_id = ? " + 
             "AND g.game_id = p.game_id " +
             "AND g.pick_submit_by_date < ? order by u.first_name, u.last_name", [gameId, new Date()], function(err, res){
-            sql.destory();
+            sql.destroy();
             if(err) {
                 console.log(err);
                 result(err, null);
@@ -167,7 +167,7 @@ Pick.addPicks = function addPicks(picks, result) {
                     result(err, null);
                 }
                 sql.query(query, [values], function(err, res) {
-                    sql.destory();
+                    sql.destroy();
                     if(err) {
                         console.log(err);
                         result(null, err);
