@@ -1,6 +1,6 @@
 'use strict'
 var mysql = require('mysql');
-var config = require('../../config.json');
+var config = require('./db');
 var Team = require('./teamModel.js');
 var Game = require('./gameModel.js');
 

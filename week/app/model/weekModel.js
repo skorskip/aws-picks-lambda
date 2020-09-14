@@ -2,8 +2,7 @@
 var Team = require('./teamModel.js');
 var League = require('./leagueModel');
 var mysql = require('mysql');
-var config = require('../../config.json');
-
+var config = require('./db');
 
 var Week = function(week){
     this.number = week.number;

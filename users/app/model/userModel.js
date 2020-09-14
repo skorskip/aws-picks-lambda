@@ -1,6 +1,6 @@
 'use strict';
 var mysql = require('mysql');
-var config = require('../../config.json');
+var config = require('./db');
 
 var User = function(user) {
     this.user_name = user.user_name;

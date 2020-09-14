@@ -1,6 +1,6 @@
 'user strict';
 var mysql = require('mysql');
-var config = require('../../config.json');
+var config = require('./db');
 
 var Game = function(game){
     this.game_id                    = game.game_id;

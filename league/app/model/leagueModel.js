@@ -1,11 +1,11 @@
 'use strict'
 var mysql = require('mysql');
-var config = require('../../config.json');
+var config = require('./db');
 var League = function(){}
 
 League.leagueSettings = function leagueSettings(result){
     
-    var sql = mysql.createConnection(config.database);
+    var sql = mysql.createConnection(config);
     
     sql.connect(function(err){
         if (err) throw err;
