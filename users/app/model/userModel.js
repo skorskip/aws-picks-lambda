@@ -12,7 +12,7 @@ var User = function(user) {
 }
 
 User.updateUser = function updateUser(userId, user, result) {
-    var sql = mysql.createConnection(config.database);
+    var sql = mysql.createConnection(config);
 
     sql.connect(function(err){
         if (err) {
@@ -52,7 +52,7 @@ User.updateUser = function updateUser(userId, user, result) {
 };
 
 User.deleteUser = function deleteUser(userId, result) {
-    var sql = mysql.createConnection(config.database);
+    var sql = mysql.createConnection(config);
 
     sql.connect(function(err){
         if (err) {
@@ -74,7 +74,7 @@ User.deleteUser = function deleteUser(userId, result) {
 };
 
 User.createUser = function createUser(user, result) {
-    var sql = mysql.createConnection(config.database);
+    var sql = mysql.createConnection(config);
 
     sql.connect(function(err){
         if (err) {
@@ -97,7 +97,7 @@ User.createUser = function createUser(user, result) {
 };
 
 User.login = function login(userPass, result) {
-    var sql = mysql.createConnection(config.database);
+    var sql = mysql.createConnection(config);
 
     sql.connect(function(err){
         if (err) {
@@ -123,7 +123,7 @@ User.login = function login(userPass, result) {
 };
 
 User.standings = function standings(season, seasonType, result) {
-    var sql = mysql.createConnection(config.database);
+    var sql = mysql.createConnection(config);
 
     sql.connect(function(err){
         if (err) {
@@ -150,7 +150,7 @@ User.standings = function standings(season, seasonType, result) {
 };
 
 User.standingsByUser = function standingsByUser(season, seasonType, user, result) {
-    var sql = mysql.createConnection(config.database);
+    var sql = mysql.createConnection(config);
 
     sql.connect(function(err){
         if (err) {

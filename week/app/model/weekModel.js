@@ -53,7 +53,7 @@ Week.getCurrentWeek = function getCurrentWeek(req, result) {
 }
 
 Week.getWeekSQL = function getWeekSQL(season, week, seasonType, user, result) {
-    var sql = mysql.createConnection(config.database);
+    var sql = mysql.createConnection(config);
 
     sql.connect(function(err){
         if(err) { 
