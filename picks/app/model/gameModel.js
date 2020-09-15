@@ -24,7 +24,7 @@ var Game = function(game){
 
 Game.getGamesById = function getGamesById(listGameIds, result) {
     if(listGameIds.length > 0) {
-        var sql = mysql.createConnection(config.database);
+        var sql = mysql.createConnection(config);
 
         sql.connect(function(err){
             if(err) { 

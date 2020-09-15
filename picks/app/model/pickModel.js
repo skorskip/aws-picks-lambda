@@ -11,7 +11,7 @@ var Pick = function(pick) {
 }
 
 Pick.getUsersPicksByWeek = function getUsersPicksByWeek(userId, season, week, seasonType, result) {
-    var sql = mysql.createConnection(config.database);
+    var sql = mysql.createConnection(config);
 
     sql.connect(function(err){
         if (err) {
@@ -43,7 +43,7 @@ Pick.getUsersPicksByWeek = function getUsersPicksByWeek(userId, season, week, se
 }
 
 Pick.getPicksByWeek = function getPicksByWeek(user, season, week, seasonType, result) {
-    var sql = mysql.createConnection(config.database);
+    var sql = mysql.createConnection(config);
 
     sql.connect(function(err){
         if (err) {
@@ -79,7 +79,7 @@ Pick.getPicksByWeek = function getPicksByWeek(user, season, week, seasonType, re
 Pick.getWeekPicksByGame = function getWeekPicksByGame(season, week, seasonType, result) {
     let weekPicksObject = {};
     let promises_array = [];
-    var sql = mysql.createConnection(config.database);
+    var sql = mysql.createConnection(config);
 
     sql.connect(function(err){
         if (err) {
@@ -123,7 +123,7 @@ Pick.getWeekPicksByGame = function getWeekPicksByGame(season, week, seasonType, 
 }
 
 Pick.getPicksByGame = function getPicksByGame(gameId, result) {
-    var sql = mysql.createConnection(config.database);
+    var sql = mysql.createConnection(config);
 
     sql.connect(function(err){
         if (err) {
@@ -159,7 +159,7 @@ Pick.addPicks = function addPicks(picks, result) {
             let keys = Object.keys(picks[0]);
             let values = picks.map( obj => keys.map( key => obj[key]));
             let query = 'INSERT INTO picks (' + keys.join(',') + ') VALUES ?';
-            var sql = mysql.createConnection(config.database);
+            var sql = mysql.createConnection(config);
 
             sql.connect(function(err){
                 if (err) {
@@ -186,7 +186,7 @@ Pick.addPicks = function addPicks(picks, result) {
 }
 
 Pick.getPick = function getPick(id, result) {
-    var sql = mysql.createConnection(config.database);
+    var sql = mysql.createConnection(config);
 
     sql.connect(function(err){
         if (err) {
@@ -209,7 +209,7 @@ Pick.getPick = function getPick(id, result) {
 }
 
 Pick.deletePick = function deletePick(id, result) {
-    var sql = mysql.createConnection(config.database);
+    var sql = mysql.createConnection(config);
 
     sql.connect(function(err){
         if (err) {
@@ -240,7 +240,7 @@ Pick.updatePick = function updatePick(id, pick, result) {
             result(errorCheckDate, null);
         } else {
             if(valid) {
-                var sql = mysql.createConnection(config.database);
+                var sql = mysql.createConnection(config);
 
                 sql.connect(function(err){
                     if (err) {
@@ -273,7 +273,7 @@ Pick.checkPicksDateValid = function checkPicksDateValid(picks, result) {
     for(var i = 0; i < picks.length; i++) {
         gameArray.push(picks[i].gameId);
     }
-    var sql = mysql.createConnection(config.database);
+    var sql = mysql.createConnection(config);
 
     sql.connect(function(err){
         if (err) {

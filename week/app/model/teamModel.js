@@ -14,7 +14,7 @@ var Team = function(team){
 Team.getTeamsById = function getTeamsById(teamIds, result) {
 
     if(teamIds.length > 0) {
-        var sql = mysql.createConnection(config.database);
+        var sql = mysql.createConnection(config);
 
         sql.connect(function(err){
             if(err) {
