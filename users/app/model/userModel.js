@@ -134,8 +134,7 @@ User.standings = function standings(season, seasonType, result) {
             'SELECT * ' +
             'FROM rpt_user_stats ' +
             'WHERE season = ? ' +
-            'AND season_type = ? ' +
-            'ORDER BY ranking, wins desc, tie_breaks desc', [season, seasonType], function(err, res) {
+            'AND season_type = ?', [season, seasonType], function(err, res) {
                 sql.destroy();
                 if(err) {
                     console.log(err);
@@ -162,8 +161,7 @@ User.standingsByUser = function standingsByUser(season, seasonType, user, result
             'FROM rpt_user_stats ' +
             'WHERE season = ? ' +
             'AND season_type = ? ' +
-            'AND user_id = ? ' +
-            'ORDER BY ranking, wins desc, tie_breaks desc', [season, seasonType, user.user_id], function(err, res) {
+            'AND user_id = ?', [season, seasonType, user.user_id], function(err, res) {
                 sql.destroy();
                 if(err) {
                     console.log(err);
