@@ -148,32 +148,61 @@ User.standings = function standings(season, seasonType, result) {
     });
 };
 
-User.standingsByUser = function standingsByUser(season, seasonType, user, result) {
+User.standingsByUser = function standingsByUser(season, seasonType, week, user, result) {
+    User.updateView(season, seasonType, week, function(errUpdate, resUpdate) {
+
+        if(errUpdate) {
+            console.log(errUpdate);
+            result(errUpdate, null);
+        }
+
+        var sql = mysql.createConnection(config);
+
+        sql.connect(function(err){
+            if (err) {
+                console.log(err);
+                result(err, null);
+            }
+            sql.query(
+                'SELECT * ' +
+                'FROM rpt_user_stats ' +
+                'WHERE season = ? ' +
+                'AND season_type = ? ' +
+                'AND user_id = ?', [season, seasonType, user.user_id], function(err, res) {
+                    sql.destroy();
+                    if(err) {
+                        console.log(err);
+                        result(err, null);
+                    }
+                    else {
+                        console.log(res);
+                        result(null, res);
+                    }
+                });
+        });
+    })
+};
+
+User.updateView = function updateView(season, seasonType, week, result) {
     var sql = mysql.createConnection(config);
 
-    sql.connect(function(err){
-        if (err) {
+    sql.connect(function(err) {
+        if(err) {
             console.log(err);
             result(err, null);
         }
-        sql.query(
-            'SELECT * ' +
-            'FROM rpt_user_stats ' +
-            'WHERE season = ? ' +
-            'AND season_type = ? ' +
-            'AND user_id = ?', [season, seasonType, user.user_id], function(err, res) {
-                sql.destroy();
-                if(err) {
-                    console.log(err);
-                    result(err, null);
-                }
-                else {
-                    console.log(res);
-                    result(null, res);
-                }
-            });
-    });
-
-};  
+        sql.query('CALL update_weekly_user_stats(?, ?, ?)', [season, seasonType, week], function(err, res){
+            sql.destroy();
+            if(err) {
+                console.log(err);
+                result(err, null);
+            }
+            else {
+                console.log(res);
+                result(null, res);
+            }
+        });
+    })
+}
 
 module.exports = User;
