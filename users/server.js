@@ -16,9 +16,9 @@ app.post('/register', (req, res) => users.createUser(req, res));
 app.post('/login', (req, res) => users.login(req, res));
 
 // standings?season={season}&seasonType={seasonType}
-app.get('/standings/season/:season/seasonType/:seasonType', (req, res) => users.standings(req, res));
+app.get('/standings', (req, res) => users.standings(req, res));
 
 // standings?season={season}&seasonType={seasonType}&week={week}
-app.post('/standings/season/:season/seasonType/:seasonType/week/:week', (req, res) => users.standingsByUser(req, res));
+app.post('/standings', (req, res) => users.standingsByUser(req, res));
 
 module.exports = app;
