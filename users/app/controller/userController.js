@@ -31,14 +31,14 @@ exports.login = function(req, res) {
 };
 
 exports.standings = function(req, res) {
-    User.standings(req.params.season, req.params.seasonType, function(err, users) {
+    User.standings(req.query.season, req.query.seasonType, function(err, users) {
         if(err) res.send(err);
         res.json(users);
     })
 };
 
 exports.standingsByUser = function(req, res) {
-    User.standingsByUser(req.params.season, req.params.seasonType, req.params.week, req.body, function(err, users){
+    User.standingsByUser(req.query.season, req.query.seasonType, req.query.week, req.body, function(err, users){
         if(err) res.send(err);
         res.json(users);
     })
