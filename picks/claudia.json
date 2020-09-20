@@ -1,11 +1,11 @@
 {
   "lambda": {
-    "role": "arn:aws:iam::159370411434:role/LambdaAPIExecutor",
+    "role": "arn:aws:iam::099811887654:role/LambdaAPIExecutor",
     "name": "picks",
     "region": "us-east-2",
     "sharedRole": true
   },
   "api": {
-    "id": "eprpzyjbu5"
+    "id": "vh4o039qgh"
   }
 }
