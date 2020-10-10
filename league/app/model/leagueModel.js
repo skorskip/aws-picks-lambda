@@ -8,7 +8,10 @@ League.leagueSettings = function leagueSettings(result){
     var sql = mysql.createConnection(config);
     
     sql.connect(function(err){
-        if (err) throw err;
+        if (err) {
+            console.log(err);
+            result(err, null);
+        }
         sql.query(
             'SELECT settings ' +
             'FROM config ' +
