@@ -1,9 +1,11 @@
-'user strict';
+'use strict'
 
-var mysql = require('mysql');
-var config = require('../../config.json')
+var config = {
+    user : process.env.DB_USER,
+    password : process.env.DB_PASSWORD,
+    host : process.env.DB_HOST,
+    port : process.env.DB_PORT,
+    database : process.env.DB_DATABASE
+}
 
-//local mysql db connection
-var connection = mysql.createPool(config.database_dev);
-
-module.exports = connection;
+module.exports = config;

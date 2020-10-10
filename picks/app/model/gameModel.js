@@ -1,5 +1,6 @@
 'user strict';
-var sql = require('./db.js');
+var mysql = require('mysql');
+var config = require('./db');
 
 var Game = function(game){
     this.game_id                    = game.game_id;
@@ -23,11 +24,28 @@ var Game = function(game){
 
 Game.getGamesById = function getGamesById(listGameIds, result) {
     if(listGameIds.length > 0) {
-        sql.query("Select * from games where game_id in (?) ORDER BY start_time", [listGameIds], function (err, res) {
-            if(err) result(err, null);
-            else result(null, res);
+        var sql = mysql.createConnection(config);
+
+        sql.connect(function(err){
+            if(err) { 
+                console.log(err);
+                result(err, null);
+            }
+
+            sql.query("Select * from games where game_id in (?) ORDER BY start_time", [listGameIds], function (err, res) {
+                sql.destroy();
+                if(err) { 
+                    console.log(err);
+                    result(err, null);
+                }
+                else {
+                    console.log(res);
+                    result(null, res);
+                }
+            });
         });
     } else {
+        console.log("[]");
         result(null, []);
     }
 };
