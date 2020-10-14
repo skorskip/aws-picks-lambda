@@ -8,7 +8,7 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// others?user={userId}&season={season}&seasonType={seasonType}&week={week}
+// others?user={user}&season={season}&seasonType={seasonType}&week={week}
 app.get('/others', (req, res) => picks.getUsersPicksByWeek(req, res));
 
 // week?season={season}&seasonType={seasonType}&week={week}
