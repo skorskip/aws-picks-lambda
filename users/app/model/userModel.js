@@ -202,7 +202,37 @@ User.updateView = function updateView(season, seasonType, week, result) {
                 result(null, res);
             }
         });
-    })
-}
+    });
+};
+
+User.getUserPicksLimit = function getUserPicksLimit(season, seasonType, userId, result) {
+
+    var sql  = mysql.createConnection(config);
+
+    sql.connect(function(err) {
+        if(err) {
+            console.log(err);
+            result(err, null);
+        }
+        sql.query('SELECT user_id, user_type, max_picks, picks_penalty ' +
+            'FROM season_user ' + 
+            'WHERE season = ? ' +
+            'AND season_type = ? ' +
+            'AND user_id = ? ' +
+            'AND user_type = ?', 
+            [season, seasonType, userId, 'participant'],
+            function(err, res) {
+                sql.destroy();
+                if(err) {
+                    console.log(err);
+                    result(err, null);
+                } else {
+                    console.log(res);
+                    result(null, res);
+                }
+            }
+        )
+    });
+};
 
 module.exports = User;
