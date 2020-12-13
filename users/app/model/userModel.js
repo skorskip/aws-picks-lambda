@@ -215,7 +215,7 @@ User.getUserPicksLimit = function getUserPicksLimit(season, seasonType, userId, 
             result(err, null);
         }
         sql.query('SELECT user_id, user_type, max_picks, picks_penalty ' +
-            'FROM season_user ' + 
+            'FROM season_users ' + 
             'WHERE season = ? ' +
             'AND season_type = ? ' +
             'AND user_id = ? ' +
