@@ -218,9 +218,8 @@ User.getUserPicksLimit = function getUserPicksLimit(season, seasonType, userId, 
             'FROM season_users ' + 
             'WHERE season = ? ' +
             'AND season_type = ? ' +
-            'AND user_id = ? ' +
-            'AND user_type = ?', 
-            [season, seasonType, userId, 'participant'],
+            'AND user_id = ?',
+            [season, seasonType, userId],
             function(err, res) {
                 sql.destroy();
                 if(err) {
