@@ -1,6 +1,7 @@
 'use strict'
 var mysql = require('mysql');
 var config = require('./db');
+var jwtDecode = require('jwt-decode');
 var Team = require('./teamModel.js');
 var Game = require('./gameModel.js');
 
@@ -42,10 +43,10 @@ Pick.getUsersPicksByWeek = function getUsersPicksByWeek(userId, season, week, se
     });
 }
 
-Pick.getPicksByWeek = function getPicksByWeek(user, season, week, seasonType, result) {
-    var sql = mysql.createConnection(config);
+Pick.getPicksByWeek = function getPicksByWeek(user, season, week, seasonType, token, result) {
+    var userToken = jwtDecode(token)
     if(userToken['cognito:username'] === user.user_name) {
-
+        var sql = mysql.createConnection(config);
         sql.connect(function(err){
             if (err) {
                 console.log(err);
