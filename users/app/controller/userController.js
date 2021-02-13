@@ -24,7 +24,7 @@ exports.createUser = function(req, res) {
 };
 
 exports.login = function(req, res) {
-    User.login(req.body, function(err, user) {
+    User.login(req.body, req.headers.authorization, function(err, user) {
         if(err) return res.status(500).send({error: true, message: "Error logging in", content: err});
         res.json(user);
     })

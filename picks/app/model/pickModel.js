@@ -44,35 +44,39 @@ Pick.getUsersPicksByWeek = function getUsersPicksByWeek(userId, season, week, se
 
 Pick.getPicksByWeek = function getPicksByWeek(user, season, week, seasonType, result) {
     var sql = mysql.createConnection(config);
+    if(userToken['cognito:username'] === user.user_name) {
 
-    sql.connect(function(err){
-        if (err) {
-            console.log(err);
-            result(err, null);
-        }
-        sql.query(        
-            "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, g.away_team_id, g.home_team_id " +
-            "FROM picks p, games g, users u " + 
-            "WHERE p.game_id = g.game_id " + 
-            "AND g.season = ? " + 
-            "AND g.week = ? " +
-            "AND g.season_type = ? " +
-            "AND u.user_id = p.user_id " +
-            "AND u.user_id = ? " +
-            "AND u.password = ?", [season, week, seasonType, user.user_id, user.password], function(err, res) {
-            sql.destroy();
-            if(err) {
+        sql.connect(function(err){
+            if (err) {
                 console.log(err);
                 result(err, null);
             }
-            else {
-                Pick.picksObjectMapper(res, function(mapppingErr, picksObject){
-                    console.log(picksObject);
-                    result(null, picksObject);
-                });
-            }
+            sql.query(        
+                "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, g.away_team_id, g.home_team_id " +
+                "FROM picks p, games g, users u " + 
+                "WHERE p.game_id = g.game_id " + 
+                "AND g.season = ? " + 
+                "AND g.week = ? " +
+                "AND g.season_type = ? " +
+                "AND u.user_id = p.user_id " +
+                "AND u.user_id = ? " +
+                "AND u.password = ?", [season, week, seasonType, user.user_id, user.password], function(err, res) {
+                sql.destroy();
+                if(err) {
+                    console.log(err);
+                    result(err, null);
+                }
+                else {
+                    Pick.picksObjectMapper(res, function(mapppingErr, picksObject){
+                        console.log(picksObject);
+                        result(null, picksObject);
+                    });
+                }
+            });
         });
-    });
+    } else {
+        result('Unauthorized', null);
+    }
 
 }
 

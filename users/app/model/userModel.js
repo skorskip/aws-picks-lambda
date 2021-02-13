@@ -1,6 +1,7 @@
 'use strict';
 var mysql = require('mysql');
 var config = require('./db');
+var jwtDecode = require('jwt-decode');
 
 var User = function(user) {
     this.user_name = user.user_name;
@@ -96,30 +97,34 @@ User.createUser = function createUser(user, result) {
 
 };
 
-User.login = function login(userPass, result) {
-    var sql = mysql.createConnection(config);
+User.login = function login(userPass, token, result) {
+    var userToken = jwtDecode(token)
+    if(userToken['email'] === userPass.user_name || userToken['cognito:username'] === userPass.user_name) {
+        var sql = mysql.createConnection(config);
 
-    sql.connect(function(err){
-        if (err) {
-            console.log(err);
-            result(err, null);
-        }
-        sql.query('SELECT * ' +
-        'FROM users ' +
-        'WHERE (LOWER(user_name) = ? OR email = ?) ' +
-        'AND sha2(concat(password_salt,?),256) = password', [userPass.user_name.toLowerCase(), userPass.user_name, userPass.password], function(err, res) {
-            sql.destroy();
-            if(err) {
+        sql.connect(function(err){
+            if (err) {
                 console.log(err);
                 result(err, null);
             }
-            else {
-                console.log(res);
-                result(null,res);
-            }
+            sql.query('SELECT * ' +
+            'FROM users ' +
+            'WHERE (LOWER(user_name) = ? OR email = ?)',
+            [userPass.user_name.toLowerCase(), userPass.user_name, userPass.password], function(err, res) {
+                sql.destroy();
+                if(err) {
+                    console.log(err);
+                    result(err, null);
+                }
+                else {
+                    console.log(res);
+                    result(null,res);
+                }
+            });
         });
-    });
-
+    } else {
+        result("Unauthorized", null);
+    }
 };
 
 User.standings = function standings(season, seasonType, result) {

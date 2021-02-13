@@ -10,7 +10,7 @@ exports.getUsersPicksByWeek = function(req, res) {
 };
 
 exports.getPicksByWeek = function(req, res) {
-    Pick.getPicksByWeek(req.body, req.query.season, req.query.week, req.query.seasonType, function(err, picks) {
+    Pick.getPicksByWeek(req.body, req.query.season, req.query.week, req.query.seasonType, req.headers.authorization, function(err, picks) {
         if(err) return res.status(500).send({error: true, message: "Error retrieving picks", content: err});
         res.json(picks);
     });
