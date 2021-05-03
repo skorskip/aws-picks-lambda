@@ -1,4 +1,5 @@
 config.json
 config.*.json
 configs/*
+*/node_modules
 .DS_Store

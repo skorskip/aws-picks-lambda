@@ -34,7 +34,7 @@ Pick.getUsersPicksByWeek = function getUsersPicksByWeek(userId, season, week, se
                 result(err, null);
             }
             else {
-                Pick.picksObjectMapper(res, function(mapppingErr, picksObject){
+                Pick.picksObjectMapper(res, function(mappingErr, picksObject){
                     console.log(picksObject);
                     result(null, picksObject);
                 });

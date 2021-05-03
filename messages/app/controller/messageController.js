@@ -8,3 +8,10 @@ exports.announcements = function(req, res) {
         res.json(message);
     });
 }
+
+exports.chatThread = function(req, res) {
+    Message.chatThread(function(err, chatUrl){
+        if(err) return res.status(500).send({errr: true, message: "Error retrieving chat thread", content: err});
+        res.json(chatUrl);
+    });
+}
