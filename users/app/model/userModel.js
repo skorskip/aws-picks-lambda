@@ -15,10 +15,10 @@ var User = function(user) {
 User.updateUser = function updateUser(userId, user, result) {
     var sql = mysql.createConnection(config);
 
-    sql.connect(function(err){
-        if (err) {
-            console.log(err);
-            result(err, null);
+    sql.connect(function(connectErr){
+        if (connectErr) {
+            console.error(connectErr);
+            result(connectErr, null);
         }
         sql.query('UPDATE users SET ' +
         'user_name = ?, ' + 
@@ -36,7 +36,7 @@ User.updateUser = function updateUser(userId, user, result) {
             
             sql.destroy();
             if(err) {
-                console.log("FAILURE");
+                console.error("FAILURE");
                 result(null, 'FAILURE');
             }
             else {
@@ -55,19 +55,19 @@ User.updateUser = function updateUser(userId, user, result) {
 User.deleteUser = function deleteUser(userId, result) {
     var sql = mysql.createConnection(config);
 
-    sql.connect(function(err){
-        if (err) {
-            console.log(err);
-            result(err, null);
+    sql.connect(function(connectErr){
+        if (connectErr) {
+            console.error(connectErr);
+            result(connectErr, null);
         }
         sql.query('DELETE FROM users WHERE user_id = ?', userId, function(err, res) {
             sql.destroy();
             if(err) {
-                console.log(err);
+                console.error(err);
                 result(err, null);
             }
             else {
-                console.log(err);
+                console.log(res);
                 result(null, res);
             }
         });
@@ -77,15 +77,15 @@ User.deleteUser = function deleteUser(userId, result) {
 User.createUser = function createUser(user, result) {
     var sql = mysql.createConnection(config);
 
-    sql.connect(function(err){
-        if (err) {
-            console.log(err);
-            result(err, null);
+    sql.connect(function(connectErr){
+        if (connectErr) {
+            console.error(connectErr);
+            result(connectErr, null);
         }
         sql.query('INSERT INTO users SET ?', user, function(err, res) {
             sql.destroy();
             if(err) {
-                console.log('FAILURE');
+                console.error('FAILURE');
                 result(null, 'FAILURE');
             }
             else {
@@ -99,13 +99,14 @@ User.createUser = function createUser(user, result) {
 
 User.login = function login(userPass, token, result) {
     var userToken = jwtDecode(token)
-    if(userToken['email'] === userPass.user_name || userToken['cognito:username'] === userPass.user_name) {
+    if(userToken['email'].toLowerCase() === userPass.user_name.toLowerCase() || 
+        userToken['cognito:username'].toLowerCase() === userPass.user_name.toLowerCase()) {
         var sql = mysql.createConnection(config);
 
-        sql.connect(function(err){
-            if (err) {
-                console.log(err);
-                result(err, null);
+        sql.connect(function(connectErr){
+            if (connectErr) {
+                console.error(connectErr);
+                result(connectErr, null);
             }
             sql.query('SELECT * ' +
             'FROM users ' +
@@ -113,7 +114,7 @@ User.login = function login(userPass, token, result) {
             [userPass.user_name.toLowerCase(), userPass.user_name, userPass.password], function(err, res) {
                 sql.destroy();
                 if(err) {
-                    console.log(err);
+                    console.error(err);
                     result(err, null);
                 }
                 else {
@@ -130,10 +131,10 @@ User.login = function login(userPass, token, result) {
 User.standings = function standings(season, seasonType, result) {
     var sql = mysql.createConnection(config);
 
-    sql.connect(function(err){
-        if (err) {
-            console.log(err);
-            result(err, null);
+    sql.connect(function(connectErr){
+        if (connectErr) {
+            console.error(connectErr);
+            result(connectErr, null);
         }
         sql.query(
             'SELECT * ' +
@@ -142,7 +143,7 @@ User.standings = function standings(season, seasonType, result) {
             'AND season_type = ?', [season, seasonType], function(err, res) {
                 sql.destroy();
                 if(err) {
-                    console.log(err);
+                    console.error(err);
                     result(err, null);
                 }
                 else {
@@ -163,10 +164,10 @@ User.standingsByUser = function standingsByUser(season, seasonType, week, user, 
 
         var sql = mysql.createConnection(config);
 
-        sql.connect(function(err){
-            if (err) {
-                console.log(err);
-                result(err, null);
+        sql.connect(function(connectErr){
+            if (connectErr) {
+                console.error(connectErr);
+                result(connectErr, null);
             }
             sql.query(
                 'SELECT * ' +
@@ -176,7 +177,7 @@ User.standingsByUser = function standingsByUser(season, seasonType, week, user, 
                 'AND user_id = ?', [season, seasonType, user.user_id], function(err, res) {
                     sql.destroy();
                     if(err) {
-                        console.log(err);
+                        console.error(err);
                         result(err, null);
                     }
                     else {
@@ -191,15 +192,15 @@ User.standingsByUser = function standingsByUser(season, seasonType, week, user, 
 User.updateView = function updateView(season, seasonType, week, result) {
     var sql = mysql.createConnection(config);
 
-    sql.connect(function(err) {
-        if(err) {
-            console.log(err);
+    sql.connect(function(connectErr) {
+        if(connectErr) {
+            console.error(connectErr);
             result(err, null);
         }
         sql.query('CALL update_weekly_user_stats(?, ?, ?)', [season, seasonType, week], function(err, res){
             sql.destroy();
             if(err) {
-                console.log(err);
+                console.error(err);
                 result(err, null);
             }
             else {
@@ -214,9 +215,9 @@ User.getUserPicksLimit = function getUserPicksLimit(season, seasonType, userId, 
 
     var sql  = mysql.createConnection(config);
 
-    sql.connect(function(err) {
-        if(err) {
-            console.log(err);
+    sql.connect(function(connectErr) {
+        if(connectErr) {
+            console.error(connectErr);
             result(err, null);
         }
         sql.query('SELECT user_id, user_type, max_picks, picks_penalty ' +
@@ -228,7 +229,7 @@ User.getUserPicksLimit = function getUserPicksLimit(season, seasonType, userId, 
             function(err, res) {
                 sql.destroy();
                 if(err) {
-                    console.log(err);
+                    console.error(err);
                     result(err, null);
                 } else {
                     console.log(res);

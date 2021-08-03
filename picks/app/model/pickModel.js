@@ -14,10 +14,10 @@ var Pick = function(pick) {
 Pick.getUsersPicksByWeek = function getUsersPicksByWeek(userId, season, week, seasonType, result) {
     var sql = mysql.createConnection(config);
 
-    sql.connect(function(err){
-        if (err) {
-            console.log(err);
-            result(err, null);
+    sql.connect(function(connectErr){
+        if (connectErr) {
+            console.log(connectErr);
+            result(connectErr, null);
         }
         sql.query(
             "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, g.away_team_id, g.home_team_id " +
@@ -47,10 +47,10 @@ Pick.getPicksByWeek = function getPicksByWeek(user, season, week, seasonType, to
     var userToken = jwtDecode(token)
     if(userToken['cognito:username'] === user.user_name) {
         var sql = mysql.createConnection(config);
-        sql.connect(function(err){
-            if (err) {
-                console.log(err);
-                result(err, null);
+        sql.connect(function(connectErr){
+            if (connectErr) {
+                console.log(connectErr);
+                result(connectErr, null);
             }
             sql.query(        
                 "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, g.away_team_id, g.home_team_id " +
@@ -86,10 +86,10 @@ Pick.getWeekPicksByGame = function getWeekPicksByGame(season, week, seasonType, 
     let promises_array = [];
     var sql = mysql.createConnection(config);
 
-    sql.connect(function(err){
-        if (err) {
-            console.log(err);
-            result(err, null);
+    sql.connect(function(connectErr){
+        if (connectErr) {
+            console.log(connectErr);
+            result(connectErr, null);
         }
         sql.query(
             "SELECT * FROM games g " +
@@ -130,10 +130,10 @@ Pick.getWeekPicksByGame = function getWeekPicksByGame(season, week, seasonType, 
 Pick.getPicksByGame = function getPicksByGame(gameId, result) {
     var sql = mysql.createConnection(config);
 
-    sql.connect(function(err){
-        if (err) {
-            console.log(err);
-            result(err, null);
+    sql.connect(function(connectErr){
+        if (connectErr) {
+            console.log(connectErr);
+            result(connectErr, null);
         }
         sql.query(
             "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, u.user_inits, u.first_name, u.last_name " +
@@ -166,10 +166,10 @@ Pick.addPicks = function addPicks(picks, result) {
             let query = 'INSERT INTO picks (' + keys.join(',') + ') VALUES ?';
             var sql = mysql.createConnection(config);
 
-            sql.connect(function(err){
-                if (err) {
-                    console.log(err);
-                    result(err, null);
+            sql.connect(function(connectErr){
+                if (connectErr) {
+                    console.log(connectErr);
+                    result(connectErr, null);
                 }
                 sql.query(query, [values], function(err, res) {
                     sql.destroy();
@@ -178,14 +178,14 @@ Pick.addPicks = function addPicks(picks, result) {
                         result(null, err);
                     }
                     else {
-                        console.log("SUCCESS")
-                        result(null, "SUCCESS");
+                        console.log(res)
+                        result(null, { message: "SUCCESS", result: res.insertId });
                     }
                 });
             });
         } else {
             console.log("PAST SUBMISSION DATE")
-            result(null, "PAST SUBMISSION DATE")
+            result(null, { message: "PAST SUBMISSION DATE" })
         }
     });
 }
@@ -193,10 +193,10 @@ Pick.addPicks = function addPicks(picks, result) {
 Pick.getPick = function getPick(id, result) {
     var sql = mysql.createConnection(config);
 
-    sql.connect(function(err){
-        if (err) {
-            console.log(err);
-            result(err, null);
+    sql.connect(function(connectErr){
+        if (connectErr) {
+            console.log(connectErr);
+            result(connectErr, null);
         }
         sql.query("SELECT * FROM picks WHERE pick_id = ?", id, function(err, res) {
             sql.destroy();
@@ -216,10 +216,10 @@ Pick.getPick = function getPick(id, result) {
 Pick.deletePick = function deletePick(id, result) {
     var sql = mysql.createConnection(config);
 
-    sql.connect(function(err){
-        if (err) {
-            console.log(err);
-            result(err, null);
+    sql.connect(function(connectErr){
+        if (connectErr) {
+            console.log(connectErr);
+            result(connectErr, null);
         }
         sql.query("DELETE FROM picks WHERE pick_id = ?", id, function(err, res) {
             sql.destroy();
@@ -229,7 +229,7 @@ Pick.deletePick = function deletePick(id, result) {
             }
             else {
                 console.log("SUCCESS")
-                result(null, "SUCCESS");
+                result(null, { message: "SUCCESS", result: res });
             }
         });
     });
@@ -247,10 +247,10 @@ Pick.updatePick = function updatePick(id, pick, result) {
             if(valid) {
                 var sql = mysql.createConnection(config);
 
-                sql.connect(function(err){
-                    if (err) {
-                        console.log(err);
-                        result(err, null);
+                sql.connect(function(connectErr){
+                    if (connectErr) {
+                        console.log(connectErr);
+                        result(connectErr, null);
                     }
                     sql.query("UPDATE picks SET team_id = ? WHERE pick_id = ?", [pick.team_id, id], function(err, res) {
                         sql.destroy();
@@ -260,14 +260,14 @@ Pick.updatePick = function updatePick(id, pick, result) {
                         }
                         else {
                             console.log("SUCCESS")
-                            result(null, "SUCCESS");
+                            result(null, { message: "SUCCESS", result: res });
                         }
                     });
                 });
 
             } else {
                 console.log("PAST SUBMISSION DATE")
-                result(null, "PAST SUBMISSION DATE");
+                result(null, { message: "PAST SUBMISSION DATE" });
             }
         }
     });
@@ -280,10 +280,10 @@ Pick.checkPicksDateValid = function checkPicksDateValid(picks, result) {
     }
     var sql = mysql.createConnection(config);
 
-    sql.connect(function(err){
-        if (err) {
-            console.log(err);
-            result(err, null);
+    sql.connect(function(connectErr){
+        if (connectErr) {
+            console.log(connectErr);
+            result(connectErr, null);
         }
         sql.query("SELECT COUNT(*) as count FROM games WHERE game_id in (?) AND pick_submit_by_date < ?", [gameArray, new Date().toISOString()], function(err, res) {
             sql.destroy();
