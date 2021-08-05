@@ -30,13 +30,6 @@ exports.addPicks = function(req, res) {
     });
 };
 
-exports.getPick = function(req, res) {
-    Pick.getPick(req.params.id, function(err, pick) {
-        if(err) return res.status(500).send({error: true, message: "Error retrieving pick", content: err});
-        res.json(pick);
-    });
-};
-
 exports.updatePick = function(req, res) {
     Pick.updatePick(req.params.id, req.body, function(err, status) {
         if(err) return res.status(500).send({error: true, message: "Error updating pick", content: err});

@@ -20,14 +20,15 @@ Pick.getUsersPicksByWeek = function getUsersPicksByWeek(userId, season, week, se
             result(connectErr, null);
         }
         sql.query(
-            "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, g.away_team_id, g.home_team_id " +
+            "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, g.away_team_id, g.home_team_id, g.pick_submit_by_date " +
             "FROM picks p, games g " + 
             "WHERE p.game_id = g.game_id " + 
             "AND g.season = ? " +
             "AND g.week = ? " + 
             "AND g.season_type = ? " +
             "AND p.user_id = ? " +
-            "AND g.pick_submit_by_date < ?", [season, week, seasonType, userId, new Date()], function(err, res){
+            "AND g.pick_submit_by_date < ? " +
+            "ORDER BY g.start_time ASC", [season, week, seasonType, userId, new Date()], function(err, res){
             sql.destroy();
             if(err) {
                 console.log(err);
@@ -53,7 +54,7 @@ Pick.getPicksByWeek = function getPicksByWeek(user, season, week, seasonType, to
                 result(connectErr, null);
             }
             sql.query(        
-                "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, g.away_team_id, g.home_team_id " +
+                "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, g.away_team_id, g.home_team_id, g.pick_submit_by_date " +
                 "FROM picks p, games g, users u " + 
                 "WHERE p.game_id = g.game_id " + 
                 "AND g.season = ? " + 
@@ -61,7 +62,8 @@ Pick.getPicksByWeek = function getPicksByWeek(user, season, week, seasonType, to
                 "AND g.season_type = ? " +
                 "AND u.user_id = p.user_id " +
                 "AND u.user_id = ? " +
-                "AND u.password = ?", [season, week, seasonType, user.user_id, user.password], function(err, res) {
+                "AND u.password = ? " +
+                "ORDER BY g.start_time ASC", [season, week, seasonType, user.user_id, user.password], function(err, res) {
                 sql.destroy();
                 if(err) {
                     console.log(err);
@@ -136,7 +138,7 @@ Pick.getPicksByGame = function getPicksByGame(gameId, result) {
             result(connectErr, null);
         }
         sql.query(
-            "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, u.user_inits, u.first_name, u.last_name " +
+            "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, u.user_inits, u.first_name, u.last_name, g.pick_submit_by_date " +
             "FROM picks p, users u, games g " + 
             "WHERE p.user_id = u.user_id " + 
             "AND p.game_id = ? " + 
@@ -161,7 +163,7 @@ Pick.addPicks = function addPicks(picks, result) {
             console.log(errorCheckDate);
             result(errorCheckDate, null);
         } else if(valid) {
-            let keys = Object.keys(picks[0]);
+            let keys = ['pick_id','user_id','game_id','team_id', 'submitted_date'];
             let values = picks.map( obj => keys.map( key => obj[key]));
             let query = 'INSERT INTO picks (' + keys.join(',') + ') VALUES ?';
             var sql = mysql.createConnection(config);
@@ -188,29 +190,6 @@ Pick.addPicks = function addPicks(picks, result) {
             result(null, { message: "PAST SUBMISSION DATE" })
         }
     });
-}
-
-Pick.getPick = function getPick(id, result) {
-    var sql = mysql.createConnection(config);
-
-    sql.connect(function(connectErr){
-        if (connectErr) {
-            console.log(connectErr);
-            result(connectErr, null);
-        }
-        sql.query("SELECT * FROM picks WHERE pick_id = ?", id, function(err, res) {
-            sql.destroy();
-            if(err) {
-                console.log(err);
-                result(err, null);
-            }
-            else {
-                console.log(res);
-                result(null, res);
-            }
-        });
-    });
-
 }
 
 Pick.deletePick = function deletePick(id, result) {

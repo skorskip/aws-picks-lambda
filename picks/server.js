@@ -19,7 +19,6 @@ app.post('/create', (req, res) => picks.addPicks(req, res));
 // games?season={season}&seasonType={seasonType}&week={week}
 app.get('/games', (req, res) => picks.getWeekPicksByGame(req, res));
 
-app.get('/:id', (req, res) => picks.getPick(req, res));
 app.put('/:id', (req, res) => picks.updatePick(req, res));
 app.delete('/:id', (req,res) => picks.deletePick(req, res));
 
