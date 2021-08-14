@@ -62,6 +62,36 @@ Message.announcements = function announcements(body, result){
     });
 }
 
+Message.activeThread = function activeThread(body, result) {
+    League.leagueSettings(function(err, settings){
+        if(err) {
+            console.error(err);
+            result(err, null);
+        }
+
+        const token = settings.messageSource.token;
+        const web = new WebClient(token);
+
+        (async () => {
+            var lastCheckDate = new Date(body.lastCheckDate);
+            var currDate = new Date();
+            var checkDate = new Date(currDate.setMinutes(currDate.getMinutes() - 20));
+            
+            if(lastCheckDate !== null && lastCheckDate > checkDate) {
+                checkDate = lastCheckDate;
+            }
+
+            const response = await web.conversations.history({
+                channel: settings.messageSource.chatChannel,
+                oldest: checkDate.getTime() / 1000
+            });
+            console.log(response.messages.length > 0);
+            result(null, response.messages.length > 0);
+            
+        })();
+    });
+}
+
 Message.chatThread = function chatThread(result){
     League.leagueSettings(function(err, settings){
         if(err) {
