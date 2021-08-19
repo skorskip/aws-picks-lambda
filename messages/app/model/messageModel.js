@@ -73,9 +73,10 @@ Message.activeThread = function activeThread(body, result) {
         const web = new WebClient(token);
 
         (async () => {
+            let liveThreshHoldMins = 20;
             var lastCheckDate = new Date(body.lastCheckDate);
             var currDate = new Date();
-            var checkDate = new Date(currDate.setMinutes(currDate.getMinutes() - 20));
+            var checkDate = new Date(currDate.setMinutes(currDate.getMinutes() - liveThreshHoldMins));
             
             if(lastCheckDate !== null && lastCheckDate > checkDate) {
                 checkDate = lastCheckDate;
