@@ -43,3 +43,24 @@ exports.deletePick = function(req, res) {
         res.json(status);
     });
 }
+
+exports.addPicksV2 = function(req, res) {
+    Pick.addPicksV2(req.params.userId, req.body, req.headers.authorization, function(err, status) {
+        if(err) return res.status(500).send({error: true, message: "Error adding picks", content: err});
+        res.json(status);
+    })
+}
+
+exports.updatePicksV2 = function(req, res) {
+    Pick.updatePickV2(req.params.userId, req.body, req.headers.authorization, function(err, status) {
+        if(err) return res.status(500).send({error: true, message: "Error updating pick", content: err});
+        res.json(status);
+    })
+}
+
+exports.deletePicksV2 = function(req, res) {
+    Pick.deletePickV2(req.params.userId, req.body, req.headers.authorization, function(err, status) {
+        if(err) return res.status(500).send({error: true, message: "Error updating pick", content: err});
+        res.json(status);
+    })
+}
