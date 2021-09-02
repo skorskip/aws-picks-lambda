@@ -4,6 +4,10 @@ var app = express();
 var cors = require('cors');
 var picks = require('./app/controller/pickController');
 
+if(process.env.NODE_ENV === 'local') {
+    require('dotenv').config();
+}
+
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -25,5 +29,9 @@ app.delete('/:id', (req,res) => picks.deletePick(req, res));
 
 app.post('/v2/delete/:userId', (req, res) => picks.deletePicksV2(req,res));
 app.post('/v2/update/:userId', (req, res) => picks.updatePicksV2(req, res));
+
+if(process.env.NODE_ENV === 'local') {
+    app.listen(3003, () => console.log('Ready'));
+}
 
 module.exports = app;

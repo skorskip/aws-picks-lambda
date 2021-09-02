@@ -4,6 +4,10 @@ var cors = require('cors');
 var app = express();
 var users = require('./app/controller/userController');
 
+if(process.env.NODE_ENV === 'local') {
+    require('dotenv').config();
+}
+
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -15,7 +19,7 @@ app.post('/register', (req, res) => users.createUser(req, res));
 
 app.post('/login', (req, res) => users.login(req, res));
 
-// standings?season={season}&seasonType={seasonType}
+// standings?season={season}&seasonType={seasonType}&week={week}
 app.get('/standings', (req, res) => users.standings(req, res));
 
 // standings?season={season}&seasonType={seasonType}&week={week}
@@ -23,5 +27,9 @@ app.post('/standings', (req, res) => users.standingsByUser(req, res));
 
 // userPicksLimit?season={season}&seasonType={seasonType}&userId={userId}
 app.get('/userPicksLimit', (req, res) => users.getUserPicksLimit(req, res));
+
+if(process.env.NODE_ENV === 'local') {
+    app.listen(3004, () => console.log('Ready'));
+}
 
 module.exports = app;

@@ -46,41 +46,36 @@ Pick.getUsersPicksByWeek = function getUsersPicksByWeek(userId, season, week, se
 
 Pick.getPicksByWeek = function getPicksByWeek(user, season, week, seasonType, token, result) {
     var userToken = jwtDecode(token)
-    if(userToken['cognito:username'] === user.user_name) {
-        var sql = mysql.createConnection(config);
-        sql.connect(function(connectErr){
-            if (connectErr) {
-                console.log(connectErr);
-                result(connectErr, null);
+    var sql = mysql.createConnection(config);
+    var username = userToken['cognito:username'];
+    sql.connect(function(connectErr){
+        if (connectErr) {
+            console.log(connectErr);
+            result(connectErr, null);
+        }
+        sql.query(        
+            "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, g.away_team_id, g.home_team_id, g.pick_submit_by_date " +
+            "FROM picks p, games g, users u " + 
+            "WHERE p.game_id = g.game_id " + 
+            "AND g.season = ? " + 
+            "AND g.week = ? " +
+            "AND g.season_type = ? " +
+            "AND u.user_id = p.user_id " +
+            "AND u.user_name = ? " +
+            "ORDER BY g.start_time ASC", [season, week, seasonType, username], function(err, res) {
+            sql.destroy();
+            if(err) {
+                console.log(err);
+                result(err, null);
             }
-            sql.query(        
-                "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, g.away_team_id, g.home_team_id, g.pick_submit_by_date " +
-                "FROM picks p, games g, users u " + 
-                "WHERE p.game_id = g.game_id " + 
-                "AND g.season = ? " + 
-                "AND g.week = ? " +
-                "AND g.season_type = ? " +
-                "AND u.user_id = p.user_id " +
-                "AND u.user_id = ? " +
-                "AND u.password = ? " +
-                "ORDER BY g.start_time ASC", [season, week, seasonType, user.user_id, user.password], function(err, res) {
-                sql.destroy();
-                if(err) {
-                    console.log(err);
-                    result(err, null);
-                }
-                else {
-                    Pick.picksObjectMapper(res, function(mapppingErr, picksObject){
-                        console.log(picksObject);
-                        result(null, picksObject);
-                    });
-                }
-            });
+            else {
+                Pick.picksObjectMapper(res, function(mapppingErr, picksObject){
+                    console.log(picksObject);
+                    result(null, picksObject);
+                });
+            }
         });
-    } else {
-        result('Unauthorized', null);
-    }
-
+    });
 }
 
 Pick.getWeekPicksByGame = function getWeekPicksByGame(season, week, seasonType, result) {
@@ -160,6 +155,8 @@ Pick.getPicksByGame = function getPicksByGame(gameId, result) {
 Pick.getCurrentPicks = function getCurrentPicks(token, result) {
     var userToken = jwtDecode(token)
     var sql = mysql.createConnection(config);
+    var username = userToken['cognito:username'];
+
     sql.connect(function(connectErr){
         if (connectErr) {
             console.log(connectErr);
@@ -175,7 +172,7 @@ Pick.getCurrentPicks = function getCurrentPicks(token, result) {
             "AND g.season_type = JSON_VALUE(c.settings, \'$.currentSeasonType\') " +
             "AND u.user_name = ? " +
             "AND p.user_id = u.user_id " +
-            "ORDER BY g.start_time", [userToken['cognito:username']], function(err, res) {
+            "ORDER BY g.start_time", [username], function(err, res) {
             sql.destroy();
             if(err) {
                 console.log(err);
