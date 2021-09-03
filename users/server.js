@@ -17,13 +17,10 @@ app.delete('/:id', (req, res) => users.deleteUser(req, res));
 
 app.post('/register', (req, res) => users.createUser(req, res));
 
-app.post('/login', (req, res) => users.login(req, res));
+app.get('/login', (req, res) => users.login(req, res));
 
 // standings?season={season}&seasonType={seasonType}&week={week}
 app.get('/standings', (req, res) => users.standings(req, res));
-
-// standings?season={season}&seasonType={seasonType}&week={week}
-app.post('/standings', (req, res) => users.standingsByUser(req, res));
 
 // userPicksLimit?season={season}&seasonType={seasonType}&userId={userId}
 app.get('/userPicksLimit', (req, res) => users.getUserPicksLimit(req, res));

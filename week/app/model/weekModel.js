@@ -11,9 +11,9 @@ var Week = function(week){
     this.teams = week.teams;
 };
 
-Week.getWeek = function getWeek(season, week, seasonType, user, result){
+Week.getWeek = function getWeek(season, week, seasonType, result){
     var getWeekSQL = new Promise((resolve, reject) => {
-        Week.getWeekSQL(season, week, seasonType, user, function(err, data){
+        Week.getWeekSQL(season, week, seasonType, function(err, data){
             if(err) reject(err);  
             resolve(data);
         });
@@ -52,7 +52,7 @@ Week.getCurrentWeek = function getCurrentWeek(req, result) {
     });
 }
 
-Week.getWeekSQL = function getWeekSQL(season, week, seasonType, user, result) {
+Week.getWeekSQL = function getWeekSQL(season, week, seasonType, result) {
     var sql = mysql.createConnection(config);
 
     sql.connect(function(err){

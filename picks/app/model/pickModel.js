@@ -44,7 +44,7 @@ Pick.getUsersPicksByWeek = function getUsersPicksByWeek(userId, season, week, se
     });
 }
 
-Pick.getPicksByWeek = function getPicksByWeek(user, season, week, seasonType, token, result) {
+Pick.getPicksByWeek = function getPicksByWeek(season, week, seasonType, token, result) {
     var userToken = jwtDecode(token)
     var sql = mysql.createConnection(config);
     var username = userToken['cognito:username'];
@@ -188,14 +188,14 @@ Pick.getCurrentPicks = function getCurrentPicks(token, result) {
     });
 }
 
-Pick.addPicksV2 = function addPicksV2(userId, picks, token, result) {
+Pick.addPicks = function addPicks(userId, picks, token, result) {
     this.submitPicksPolicy(userId, picks, function(policyErr, policyRes) {
         if(policyErr) {
             console.error(policyErr);
             result(policyErr, null);
         }
 
-        Pick.addPicks(picks, function(addErr, addRes) {
+        Pick.addPicksSQL(picks, function(addErr, addRes) {
             if(addErr) {
                 console.error(addErr);
                 result(addErr, null);
@@ -211,7 +211,7 @@ Pick.addPicksV2 = function addPicksV2(userId, picks, token, result) {
     });
 } 
 
-Pick.addPicks = function addPicks(picks, result) {
+Pick.addPicksSQL = function addPicksSQL(picks, result) {
 
     let keys = ['pick_id','user_id','game_id','team_id', 'submitted_date'];
     let values = picks.map( obj => keys.map( key => obj[key]));
@@ -243,7 +243,7 @@ Pick.addPicks = function addPicks(picks, result) {
     });
 }
 
-Pick.deletePickV2 = function deletePickV2(userId, picks, token, result) {
+Pick.deletePick = function deletePick(picks, token, result) {
     Pick.editPicksPolicy(picks, function(policyErr, policyRes) {
         if(policyErr) {
             console.error(policyErr);
@@ -274,31 +274,9 @@ Pick.deletePickV2 = function deletePickV2(userId, picks, token, result) {
             })
         });
     });
-}   
-
-Pick.deletePick = function deletePick(id, result) {
-    var sql = mysql.createConnection(config);
-
-    sql.connect(function(connectErr){
-        if (connectErr) {
-            console.log(connectErr);
-            result(connectErr, null);
-        }
-        sql.query("DELETE FROM picks WHERE pick_id = ?", id, function(err, res) {
-            sql.destroy();
-            if(err) {
-                console.log(err);
-                result(err, null);
-            }
-            else {
-                console.log("SUCCESS")
-                result(null, { message: "SUCCESS", result: res });
-            }
-        });
-    });
 }
 
-Pick.updatePickV2 = function updatePickV2(userId, picks, token, result) {
+Pick.updatePicks = function updatePicks(picks, token, result) {
     Pick.editPicksPolicy(picks, function(policyErr, policyRes) {
         if(policyErr) {
             console.error(policyErr);
@@ -317,28 +295,6 @@ Pick.updatePickV2 = function updatePickV2(userId, picks, token, result) {
                 result(null, currentRes);
             });
         })
-    });
-}
-
-Pick.updatePick = function updatePick(id, pick, result) {
-    var sql = mysql.createConnection(config);
-
-    sql.connect(function(connectErr){
-        if (connectErr) {
-            console.log(connectErr);
-            result(connectErr, null);
-        }
-        sql.query("UPDATE picks SET team_id = ? WHERE pick_id = ?", [pick.team_id, id], function(err, res) {
-            sql.destroy();
-            if(err) {
-                console.log(err)
-                result(err, null);
-            }
-            else {
-                console.log("SUCCESS")
-                result(null, { message: "SUCCESS", result: res });
-            }
-        });
     });
 }
 

@@ -97,35 +97,33 @@ User.createUser = function createUser(user, result) {
 
 };
 
-User.login = function login(userPass, token, result) {
-    var userToken = jwtDecode(token)
-    if(userToken['email'].toLowerCase() === userPass.user_name.toLowerCase() || 
-        userToken['cognito:username'].toLowerCase() === userPass.user_name.toLowerCase()) {
-        var sql = mysql.createConnection(config);
+User.login = function login(token, result) {
+    var userToken = jwtDecode(token);
+    var username = userToken['cognito:username']
+    var sql = mysql.createConnection(config);
 
-        sql.connect(function(connectErr){
-            if (connectErr) {
-                console.error(connectErr);
-                result(connectErr, null);
+    sql.connect(function(connectErr){
+        if (connectErr) {
+            console.error(connectErr);
+            result(connectErr, null);
+        }
+        sql.query('SELECT * ' +
+        'FROM users ' +
+        'WHERE (LOWER(user_name) = ?)',
+        [username.toLowerCase()], function(err, res) {
+            sql.destroy();
+            if(err) {
+                console.error(err);
+                result(err, null);
             }
-            sql.query('SELECT * ' +
-            'FROM users ' +
-            'WHERE (LOWER(user_name) = ? OR email = ?)',
-            [userPass.user_name.toLowerCase(), userPass.user_name, userPass.password], function(err, res) {
-                sql.destroy();
-                if(err) {
-                    console.error(err);
-                    result(err, null);
-                }
-                else {
-                    console.log(res);
-                    result(null,res);
-                }
-            });
+
+            if(res.length === 0) {
+                result("Unauthorized", null);
+            }
+            console.log(res);
+            result(null,res);
         });
-    } else {
-        result("Unauthorized", null);
-    }
+    });
 };
 
 User.standings = function standings(season, seasonType, week, result) {
@@ -183,41 +181,6 @@ User.standingsSQL = function standings(season, seasonType, week, result) {
                 }
             });
     });
-};
-
-User.standingsByUser = function standingsByUser(season, seasonType, week, user, result) {
-    User.updateView(season, seasonType, week, function(errUpdate, resUpdate) {
-
-        if(errUpdate) {
-            console.log(errUpdate);
-            result(errUpdate, null);
-        }
-
-        var sql = mysql.createConnection(config);
-
-        sql.connect(function(connectErr){
-            if (connectErr) {
-                console.error(connectErr);
-                result(connectErr, null);
-            }
-            sql.query(
-                'SELECT * ' +
-                'FROM rpt_user_stats ' +
-                'WHERE season = ? ' +
-                'AND season_type = ? ' +
-                'AND user_id = ?', [season, seasonType, user.user_id], function(err, res) {
-                    sql.destroy();
-                    if(err) {
-                        console.error(err);
-                        result(err, null);
-                    }
-                    else {
-                        console.log(res);
-                        result(null, res);
-                    }
-                });
-        });
-    })
 };
 
 User.updateView = function updateView(season, seasonType, week, result) {
