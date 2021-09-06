@@ -1,6 +1,10 @@
 config.json
+<<<<<<< HEAD
 config.*.json
 configs/*
 */node_modules
 .DS_Store
 */.env
+=======
+config.*.json
+>>>>>>> e1dcff6659f04ece633e1ad4218998eb595a7b7e
