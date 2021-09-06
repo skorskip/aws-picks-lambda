@@ -1,5 +1,9 @@
 'use strict'
 
+if(process.env.NODE_ENV === 'local') {
+    require('dotenv').config();
+}
+
 var config = {
     user : process.env.DB_USER,
     password : process.env.DB_PASSWORD,

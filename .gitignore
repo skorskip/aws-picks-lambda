@@ -1,2 +1,7 @@
 config.json
 config.*.json
+configs/*
+!configs/claudia-config.sh
+*/node_modules
+.DS_Store
+*/.env

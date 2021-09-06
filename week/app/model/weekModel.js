@@ -67,25 +67,13 @@ Week.getWeekSQL = function getWeekSQL(season, week, seasonType, user, result) {
             "AND week = ? " + 
             "AND season_type = ? " +
             "AND home_spread is not NULL " +
-            "AND game_id NOT IN (" +
-                "SELECT p.game_id " +
-                "FROM picks p, users u, games g " +
-                "WHERE g.game_id = p.game_id " + 
-                "AND g.season = ? " + 
-                "AND g.week = ? " +
-                "AND g.season_type = ? " +
-                "AND p.user_id = u.user_id " +
-                "AND u.user_id = ? " +
-                "AND u.password = ?)" + 
             "ORDER BY start_time", [
                 season, 
                 week, 
                 seasonType, 
                 season, 
                 week, 
-                seasonType,
-                user.user_id, 
-                user.password
+                seasonType
             ], function(err, data){
             sql.destroy();
             if(err) { 
