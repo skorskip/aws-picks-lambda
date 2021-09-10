@@ -22,8 +22,8 @@ app.get('/login', (req, res) => users.login(req, res));
 // standings?season={season}&seasonType={seasonType}&week={week}
 app.get('/standings', (req, res) => users.standings(req, res));
 
-// userPicksLimit?season={season}&seasonType={seasonType}&userId={userId}
-app.get('/userPicksLimit', (req, res) => users.getUserPicksLimit(req, res));
+// user-details?userId={userId}
+app.get('/details', (req, init) => users.getUserDetails(req, res));
 
 if(process.env.NODE_ENV === 'local') {
     app.listen(3004, () => console.log('Ready'));

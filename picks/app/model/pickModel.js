@@ -11,6 +11,12 @@ var Pick = function(pick) {
     this.user_id        = pick.user_id;
 }
 
+const gameSort = (a, b) => {
+    if(a.game_id > b.game_id) return 1;
+    if(b.game_id > a.game_id) return -1;
+    return 0;
+}   
+
 Pick.getUsersPicksByWeek = function getUsersPicksByWeek(userId, season, week, seasonType, result) {
     var sql = mysql.createConnection(config);
 
@@ -36,8 +42,12 @@ Pick.getUsersPicksByWeek = function getUsersPicksByWeek(userId, season, week, se
             }
             else {
                 Pick.picksObjectMapper(res, function(mappingErr, picksObject){
-                    console.log(picksObject);
-                    result(null, picksObject);
+                    
+                    Pick.pickUserMapper(pickObject, function(userMappingErr, picksUserObject){
+                        console.log(picksUserObject);
+                        result(null, picksUserObject);
+                    })
+
                 });
             }
         });
@@ -79,75 +89,29 @@ Pick.getPicksByWeek = function getPicksByWeek(season, week, seasonType, token, r
 }
 
 Pick.getWeekPicksByGame = function getWeekPicksByGame(season, week, seasonType, result) {
-    let weekPicksObject = {};
-    let promises_array = [];
     var sql = mysql.createConnection(config);
 
     sql.connect(function(connectErr){
         if (connectErr) {
-            console.log(connectErr);
-            result(connectErr, null);
-        }
-        sql.query(
-            "SELECT * FROM games g " +
-            "WHERE g.week = ? " + 
-            "AND g.season = ? " +
-            "AND g.season_type = ?", [week, season, seasonType], function(err, res) {
-            sql.destroy();
-            if(err) {
-                console.log(err);
-                result(err, null);
-            }
-            else {
-                res.forEach(game => {
-                    promises_array.push(new Promise((resolve, reject) => {
-                        Pick.getPicksByGame(game.game_id, function(errPickByGame, picksByGameRes){
-                            if(errPickByGame) {
-                                console.log(err);
-                                result(err, null);
-                                reject();
-                            }
-                            else {
-                                weekPicksObject[game.game_id] = picksByGameRes;
-                                resolve();
-                            }
-                        });
-                    }));
-                });
-    
-                Promise.all(promises_array).then(()=>{
-                    console.log(weekPicksObject);
-                    return result(null, weekPicksObject);
-                });
-            }
-        });
-    });
-}
-
-Pick.getPicksByGame = function getPicksByGame(gameId, result) {
-    var sql = mysql.createConnection(config);
-
-    sql.connect(function(connectErr){
-        if (connectErr) {
-            console.log(connectErr);
+            console.error(connectErr);
             result(connectErr, null);
         }
         sql.query(
             "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, u.user_inits, u.first_name, u.last_name, g.pick_submit_by_date " +
             "FROM picks p, users u, games g " + 
             "WHERE p.user_id = u.user_id " + 
-            "AND p.game_id = ? " + 
+            "AND g.week = ? " + 
+            "AND g.season = ? " +
+            "AND g.season_type = ? " +
             "AND g.game_id = p.game_id " +
-            "AND g.pick_submit_by_date < ? order by u.first_name, u.last_name", [gameId, new Date()], function(err, res){
+            "AND g.pick_submit_by_date < ? order by u.first_name, u.last_name", 
+            [week, season, seasonType, new Date()], function(err, res) {
             sql.destroy();
             if(err) {
-                console.log(err);
+                console.error(err);
                 result(err, null);
             }
-            else {
-                console.log(res);
-                result(null, res);
-            }
+            result(null, res);
         });
     });
 }
@@ -325,6 +289,32 @@ Pick.picksObjectMapper = function picksObjectMapper(picks, result) {
     });    
 }
 
+Pick.pickUserMapper = function pickUserMapper(pickUsers, result) {
+    const picks = pickUsers.picks;
+    const teams = pickUsers.teams;
+    const games = pickUsers.games;
+
+    picks.sort(gameSort);
+    games.sort(gameSort);
+
+    const picksList = [];
+
+    games.forEach((game) => {
+        const gameObject = {
+            game: game,
+            awayTeam: teams.find(team => team.team_id === game.away_team_id),
+            homeTeam: teams.find(team => team.team_id === game.home_team_id),
+            pick: picks[i],
+            winning_team_id: game.winning_team_id,
+            game_status: game.game_status 
+        }
+
+        picksList.push(gameObject);
+    });
+
+    result(null, picksList);
+}
+
 Pick.editPicksPolicy = function editPicksPolicy (picks, result) {
     if(picks.length === 0) {
         result({status: 'ERROR', message: 'NO_PICKS'}, null);
@@ -375,7 +365,7 @@ Pick.getDetailedUserInfo = function getDetailedUserInfo(userId, result) {
             console.error(connectErr);
             result(err, null);
         }
-        sql.query('SELECT s.user_id, s.user_type, s.max_picks, s.picks_penalty, r.pending_picks, r.picks ' +
+        sql.query('SELECT s.user_id, s.user_type, s.max_picks, s.picks_penalty, r.pending_picks, r.picks,  r.ranking, r.wins, r.win_pct' +
             'FROM season_users s, config c, rpt_user_stats r ' + 
             'WHERE c.status = \'active\' ' +   
             'AND s.season = JSON_VALUE(c.settings, \'$.currentSeason\') ' +

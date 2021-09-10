@@ -37,10 +37,10 @@ exports.standings = function(req, res) {
     })
 };
 
-exports.getUserPicksLimit = function(req, res) {
-    User.getUserPicksLimit(req.query.season, req.query.seasonType, req.query.userId, function(err, pickLimit) {
-        if(err) return res.status(500).send({error: true, message: "Error retrieving user's picks limit"});
-        res.json(pickLimit)
+exports.getUserDetails = function(req, res) {
+    User.getUserDetails(req.query.userId, function(err, details) {
+        if(err) return res.status(500).send({error: true, message: "Error retrieving user's details"});
+        res.json(details) 
     })
-};
+}
 

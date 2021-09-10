@@ -205,8 +205,7 @@ User.updateView = function updateView(season, seasonType, week, result) {
     });
 };
 
-User.getUserPicksLimit = function getUserPicksLimit(season, seasonType, userId, result) {
-
+User.getUserDetails = function getUserDetails(userId, result) {
     var sql  = mysql.createConnection(config);
 
     sql.connect(function(connectErr) {
@@ -214,12 +213,16 @@ User.getUserPicksLimit = function getUserPicksLimit(season, seasonType, userId, 
             console.error(connectErr);
             result(err, null);
         }
-        sql.query('SELECT user_id, user_type, max_picks, picks_penalty ' +
-            'FROM season_users ' + 
-            'WHERE season = ? ' +
-            'AND season_type = ? ' +
-            'AND user_id = ?',
-            [season, seasonType, userId],
+        sql.query('SELECT s.user_id, s.user_type, s.max_picks, s.picks_penalty, r.pending_picks, r.picks,  r.ranking, r.wins, r.win_pct' +
+            'FROM season_users s, config c, rpt_user_stats r ' + 
+            'WHERE c.status = \'active\' ' +   
+            'AND s.season = JSON_VALUE(c.settings, \'$.currentSeason\') ' +
+            'AND s.season_type = JSON_VALUE(c.settings, \'$.currentSeasonType\') ' +
+            'AND r.season = JSON_VALUE(c.settings, \'$.currentSeason\') ' +
+            'AND r.season_type = JSON_VALUE(c.settings, \'$.currentSeasonType\') ' +
+            'AND s.user_id = ? ' +
+            'AND r.user_id = ?',
+            [userId, userId],
             function(err, res) {
                 sql.destroy();
                 if(err) {
@@ -232,6 +235,6 @@ User.getUserPicksLimit = function getUserPicksLimit(season, seasonType, userId, 
             }
         )
     });
-};
+}
 
 module.exports = User;
