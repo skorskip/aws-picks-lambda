@@ -127,40 +127,6 @@ User.login = function login(token, result) {
 };
 
 User.standings = function standings(season, seasonType, week, result) {
-    User.standingsSQL(season, seasonType, week, function(standingsCurrErr, standingCurrRes) {
-        if(standingsCurrErr) {
-            console.error(standingsCurrErr);
-            result(standingsCurrErr, null);
-        }
-        if(week != 1) {
-            User.standingsSQL(season, seasonType, (week - 1), function(standingsPrevErr, standingsPrevRes) {
-                if(standingsPrevErr) {
-                    console.error(standingsPrevErr);
-                    result(standingsPrevErr, null);
-                }
-
-                standingCurrRes.forEach((standing) => {
-                   let standingPrev = standingsPrevRes.find(prev => prev.user_id == standing.user_id);
-                   
-                   if(standingPrev != null) {
-                       standing.prev_ranking = standingPrev.ranking;
-                   } else {
-                        standing.prev_ranking = standing.ranking;
-                   }
-                });
-                
-                result(null, standingCurrRes);
-            })
-        } else {
-            standingCurrRes.forEach((standing) => {
-                standing.prev_ranking = standing.ranking;
-            });
-            result(null, standingCurrRes);
-        }
-    })
-}
-
-User.standingsSQL = function standings(season, seasonType, week, result) {
     var sql = mysql.createConnection(config);
 
     sql.connect(function(connectErr){
