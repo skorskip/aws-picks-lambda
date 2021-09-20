@@ -1,11 +1,22 @@
 'use strict'
 var mysql = require('mysql');
-var config = require('./db');
-var League = function(){}
+var League = function(league){
+    this.currentWeek = league.currentWeek;
+    this.currentSeason = league.currentSeason;
+    this.maxTotalPicks = league.maxTotalPicks;
+    this.currentSeasonType = league.currentSeasonType;
+    this.messageSource = {
+        channel: league.messageSource.channel,
+        chatChannel: league.messageSource.chatChannel
+    }
+    this.bonus = {
+        currentPotAmt: league.bonus.currentPotAmt
+    }
+}
 
-League.leagueSettings = function leagueSettings(result){
+League.leagueSettings = function leagueSettings(dbConfig, result){
     
-    var sql = mysql.createConnection(config);
+    var sql = mysql.createConnection(dbConfig);
     
     sql.connect(function(err){
         if (err) {
@@ -27,7 +38,6 @@ League.leagueSettings = function leagueSettings(result){
                 }
         });
     });
-
 
 };
 

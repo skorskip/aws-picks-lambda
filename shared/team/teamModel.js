@@ -1,6 +1,5 @@
 'user strict';
 var mysql = require('mysql');
-var config = require('./db');
 
 var Team = function(team){
     this.team_city          = team.team_city;
@@ -11,10 +10,10 @@ var Team = function(team){
     this.display_color      = team.display_color;
 };
 
-Team.getTeamsById = function getTeamsById(teamIds, result) {
+Team.getTeamsById = function getTeamsById(teamIds, dbConfig, result) {
 
     if(teamIds.length > 0) {
-        var sql = mysql.createConnection(config);
+        var sql = mysql.createConnection(dbConfig);
 
         sql.connect(function(err){
             if(err) {

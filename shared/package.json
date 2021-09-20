@@ -1,0 +1,22 @@
+{
+  "name": "picks-app-shared",
+  "version": "1.0.1",
+  "description": "Shared resources for the picks application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skorskip/aws-picks-lambda.git"
+  },
+  "author": "Paul Skorski",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/skorskip/aws-picks-lambda/issues"
+  },
+  "homepage": "https://github.com/skorskip/aws-picks-lambda#readme",
+  "dependencies": {
+    "mysql": "^2.18.1"
+  }
+}

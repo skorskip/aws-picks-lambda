@@ -1,8 +1,7 @@
 'user strict'
-var Team = require('./teamModel.js');
-var League = require('./leagueModel');
 var mysql = require('mysql');
 var config = require('./db');
+var shared = require('picks-app-shared');
 
 var Week = function(week){
     this.number = week.number;
@@ -36,7 +35,7 @@ Week.getWeek = function getWeek(season, week, seasonType, result){
 }
 
 Week.getCurrentWeek = function getCurrentWeek(req, result) {
-    League.leagueSettings(function(err,settings){
+    shared.league(config, function(err,settings){
         if(err) {
             console.log(err);
             result(err, null);
@@ -103,7 +102,7 @@ Week.weekMapper = function(games, season, week, seasonType, result) {
         });
     }
 
-    Team.getTeamsById(teams, function(err, teams){
+    shared.team(teams, config, function(err, teams){
         if(err) result(err, null);
         weekObject.teams = teams;
         result(null, weekObject);

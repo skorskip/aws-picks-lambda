@@ -179,7 +179,7 @@ User.getUserDetails = function getUserDetails(userId, result) {
             console.error(connectErr);
             result(err, null);
         }
-        sql.query('SELECT s.user_id, s.user_type, s.max_picks, s.picks_penalty, r.pending_picks, r.picks,  r.ranking, r.wins, r.win_pct' +
+        sql.query('SELECT s.user_id, s.user_type, s.max_picks, s.picks_penalty, r.pending_picks, r.picks,  r.ranking, r.wins, r.win_pct ' +
             'FROM season_users s, config c, rpt_user_stats r ' + 
             'WHERE c.status = \'active\' ' +   
             'AND s.season = JSON_VALUE(c.settings, \'$.currentSeason\') ' +

@@ -23,7 +23,7 @@ app.get('/login', (req, res) => users.login(req, res));
 app.get('/standings', (req, res) => users.standings(req, res));
 
 // user-details?userId={userId}
-app.get('/details', (req, init) => users.getUserDetails(req, res));
+app.get('/details', (req, res) => users.getUserDetails(req, res));
 
 if(process.env.NODE_ENV === 'local') {
     app.listen(3004, () => console.log('Ready'));

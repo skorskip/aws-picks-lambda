@@ -1,6 +1,5 @@
 'user strict';
 var mysql = require('mysql');
-var config = require('./db');
 
 var Game = function(game){
     this.game_id                    = game.game_id;
@@ -22,9 +21,9 @@ var Game = function(game){
     this.seconds_left_in_quarter    = game.seconds_left_in_quarter;
 };
 
-Game.getGamesById = function getGamesById(listGameIds, result) {
+Game.getGamesById = function getGamesById(listGameIds, dbConfig, result) {
     if(listGameIds.length > 0) {
-        var sql = mysql.createConnection(config);
+        var sql = mysql.createConnection(dbConfig);
 
         sql.connect(function(err){
             if(err) { 

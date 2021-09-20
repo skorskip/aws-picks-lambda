@@ -18,7 +18,14 @@ exports.activeThread = function(req, res) {
 
 exports.chatThread = function(req, res) {
     Message.chatThread(function(err, chatUrl){
-        if(err) return res.status(500).send({errr: true, message: "Error retrieving chat thread", content: err});
+        if(err) return res.status(500).send({error: true, message: "Error retrieving chat thread", content: err});
         res.json(chatUrl);
+    });
+}
+
+exports.setReminder = function(req, res) {
+    Message.setReminder(req.body, function(err, reminderRes) {
+        if(err) return res.status(500).send({error: true, message: "Error setting reminder", content: err});
+        res.json(reminderRes);
     });
 }

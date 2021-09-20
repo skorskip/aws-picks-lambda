@@ -2,13 +2,14 @@
 var mysql = require('mysql');
 var config = require('./db');
 var jwtDecode = require('jwt-decode');
-var Team = require('./teamModel.js');
-var Game = require('./gameModel.js');
+var shared = require('picks-app-shared');
 
 var Pick = function(pick) {
-    this.game_id        = pick.game_id;
-    this.team_id        = pick.team_id;
-    this.user_id        = pick.user_id;
+    this.game_id                = pick.game_id;
+    this.team_id                = pick.team_id;
+    this.user_id                = pick.user_id;
+    this.submitted_date         = pick.submitted_date;
+    this.pick_submit_by_date    = pick.pick_submit_by_date;
 }
 
 const gameSort = (a, b) => {
@@ -42,8 +43,7 @@ Pick.getUsersPicksByWeek = function getUsersPicksByWeek(userId, season, week, se
             }
             else {
                 Pick.picksObjectMapper(res, function(mappingErr, picksObject){
-                    
-                    Pick.pickUserMapper(pickObject, function(userMappingErr, picksUserObject){
+                    Pick.pickUserMapper(picksObject, function(userMappingErr, picksUserObject){
                         console.log(picksUserObject);
                         result(null, picksUserObject);
                     })
@@ -153,7 +153,7 @@ Pick.getCurrentPicks = function getCurrentPicks(token, result) {
 }
 
 Pick.addPicks = function addPicks(userId, picks, token, result) {
-    this.submitPicksPolicy(userId, picks, function(policyErr, policyRes) {
+    shared.policySubmitPicks(userId, picks, config, function(policyErr, policyRes) {
         if(policyErr) {
             console.error(policyErr);
             result(policyErr, null);
@@ -208,7 +208,7 @@ Pick.addPicksSQL = function addPicksSQL(picks, result) {
 }
 
 Pick.deletePick = function deletePick(picks, token, result) {
-    Pick.editPicksPolicy(picks, function(policyErr, policyRes) {
+    shared.policyEditPicks(picks, function(policyErr, policyRes) {
         if(policyErr) {
             console.error(policyErr);
             result(policyErr, null);
@@ -241,12 +241,12 @@ Pick.deletePick = function deletePick(picks, token, result) {
 }
 
 Pick.updatePicks = function updatePicks(picks, token, result) {
-    Pick.editPicksPolicy(picks, function(policyErr, policyRes) {
+    shared.policyEditPicks(picks, function(policyErr, policyRes) {
         if(policyErr) {
             console.error(policyErr);
             result(policyErr, null);
         }
-        Pick.addPicks(picks, function(addErr, addRes){
+        Pick.addPicksSQL(picks, function(addErr, addRes){
             if(addErr) {
                 console.error(addErr);
                 result(addErr, null);
@@ -278,10 +278,10 @@ Pick.picksObjectMapper = function picksObjectMapper(picks, result) {
     pickObject.teams = [];
     pickObject.games = [];
 
-    Team.getTeamsById(teams, function(err, teamObjects){
+    shared.team(teams, config, function(err, teamObjects){
         if(err){}
         pickObject.teams = teamObjects;
-        Game.getGamesById(games, function(err, gameObjects){
+        shared.game(games, config, function(err, gameObjects){
             if(err){}
             pickObject.games = gameObjects;
             result(null, pickObject);
@@ -299,7 +299,7 @@ Pick.pickUserMapper = function pickUserMapper(pickUsers, result) {
 
     const picksList = [];
 
-    games.forEach((game) => {
+    games.forEach((game, i) => {
         const gameObject = {
             game: game,
             awayTeam: teams.find(team => team.team_id === game.away_team_id),
@@ -314,82 +314,6 @@ Pick.pickUserMapper = function pickUserMapper(pickUsers, result) {
 
     result(null, picksList);
 }
-
-Pick.editPicksPolicy = function editPicksPolicy (picks, result) {
-    if(picks.length === 0) {
-        result({status: 'ERROR', message: 'NO_PICKS'}, null);
-    }
-
-    if(picks.find((pick) => new Date(pick.pick_submit_by_date) < new Date())) {
-        result({status: 'ERROR', message: 'PASS_SUBMIT_DATE'}, null);
-    } else {
-        result(null, {status: 'SUCCESS'})
-    }
-}
-
-Pick.submitPicksPolicy = function submitPicksPolicy (userId, picks, result) {
-    if(picks.length === 0) {
-        result({status: 'ERROR', message: 'NO_PICKS'}, null);
-    }
-
-    this.getDetailedUserInfo(userId, function(detailErr, detailObj) {
-        if(detailErr) {
-            console.error(detailErr);
-            result(detailErr, null);
-        }
-
-        let totalPicks = picks.length + detailObj.pending_picks + detailObj.picks;
-
-        if(picks.find((pick) => new Date(pick.pick_submit_by_date) < new Date())) {
-            result({status: 'ERROR', message: 'PASS_SUBMIT_DATE'}, null);
-        } else if(totalPicks >= detailObj.max_picks) {
-            result({
-                status: 'ERROR', 
-                message: 'TOO_MANY_PICKS', 
-                data: { 
-                    limit: detailObj.max_picks, 
-                    over: (totalPicks - detailObj.max_picks)
-                }
-            }, null)
-        } else {
-            result(null, {status: 'SUCCESS'})
-        }
-    });
-}
-
-Pick.getDetailedUserInfo = function getDetailedUserInfo(userId, result) {
-    var sql  = mysql.createConnection(config);
-
-    sql.connect(function(connectErr) {
-        if(connectErr) {
-            console.error(connectErr);
-            result(err, null);
-        }
-        sql.query('SELECT s.user_id, s.user_type, s.max_picks, s.picks_penalty, r.pending_picks, r.picks,  r.ranking, r.wins, r.win_pct' +
-            'FROM season_users s, config c, rpt_user_stats r ' + 
-            'WHERE c.status = \'active\' ' +   
-            'AND s.season = JSON_VALUE(c.settings, \'$.currentSeason\') ' +
-            'AND s.season_type = JSON_VALUE(c.settings, \'$.currentSeasonType\') ' +
-            'AND r.season = JSON_VALUE(c.settings, \'$.currentSeason\') ' +
-            'AND r.season_type = JSON_VALUE(c.settings, \'$.currentSeasonType\') ' +
-            'AND s.user_id = ? ' +
-            'AND r.user_id = ?',
-            [userId, userId],
-            function(err, res) {
-                sql.destroy();
-                if(err) {
-                    console.error(err);
-                    result(err, null);
-                } else {
-                    console.log(res);
-                    result(null, res);
-                }
-            }
-        )
-    });
-}
-
-
 
 module.exports = Pick;
 

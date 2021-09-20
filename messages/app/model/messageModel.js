@@ -1,11 +1,12 @@
 'use strict'
-var League = require('./leagueModel');
 const { WebClient } = require('@slack/web-api');
+var shared = require('picks-app-shared');
+var config = require('./db');
 
 var Message = function(){}
 
 Message.announcements = function announcements(body, result){
-    League.leagueSettings(function(err, settings){
+    shared.league(config, function(err, settings){
         if(err) {
             console.error(err);
             result(err, null);
@@ -63,7 +64,7 @@ Message.announcements = function announcements(body, result){
 }
 
 Message.activeThread = function activeThread(body, result) {
-    League.leagueSettings(function(err, settings){
+    shared.league(config, function(err, settings){
         if(err) {
             console.error(err);
             result(err, null);
@@ -94,7 +95,7 @@ Message.activeThread = function activeThread(body, result) {
 }
 
 Message.chatThread = function chatThread(result){
-    League.leagueSettings(function(err, settings){
+    shared.league(config, function(err, settings){
         if(err) {
             console.error(err);
             result(err, null);
@@ -131,6 +132,36 @@ Message.chatThread = function chatThread(result){
 
             console.log(response);
             result(null, response);
+        })();
+    });
+}
+
+Message.setReminder = function setReminder(body, result) {
+    shared.league(config, function(err, settings) {
+        if(err) {
+            console.error(err);
+            result(err, null);
+        }
+
+        const token = 'xoxp-2042553633072-2031366879121-2504829883221-4b36088a74e9bdbc5074a7975f245056';
+        const web = new WebClient(token);
+        (async () => {
+            try {
+                let minsBeforeSubmit = 15;
+                let submitDate = new Date(body.pick_submit_by_date);
+                let remindTime = new Date(submitDate.setMinutes(submitDate.getMinutes() - minsBeforeSubmit));
+
+                const response = await web.reminders.add({
+                    text: "Time to make your picks!",
+                    user: body.slack_user_id,
+                    time: remindTime.getTimezoneOffset().toString(),
+                });
+
+                result(null, {status: "SUCCESS", message: response});
+            } catch(e) {
+                console.error(e);
+                result(err, null);
+            }
         })();
     });
 }
