@@ -143,7 +143,7 @@ Message.setReminder = function setReminder(body, result) {
             result(err, null);
         }
 
-        const token = 'xoxp-2042553633072-2031366879121-2504829883221-4b36088a74e9bdbc5074a7975f245056';
+        const token = settings.messageSource.token;
         const web = new WebClient(token);
         (async () => {
             try {
