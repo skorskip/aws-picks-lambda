@@ -15,12 +15,6 @@ app.use(bodyParser.json());
 // others?user={user}&season={season}&seasonType={seasonType}&week={week}
 app.get('/others', (req, res) => picks.getUsersPicksByWeek(req, res));
 
-// week?season={season}&seasonType={seasonType}&week={week}
-app.get('/week', (req, res) => picks.getPicksByWeek(req, res));
-
-// games?season={season}&seasonType={seasonType}&week={week}
-app.get('/games', (req, res) => picks.getWeekPicksByGame(req, res));
-
 app.post('/create/:userId', (req, res) => picks.addPicks(req, res));
 app.post('/delete', (req, res) => picks.deletePicks(req,res));
 app.post('/update', (req, res) => picks.updatePicks(req, res));

@@ -12,8 +12,6 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.get('/current', (req, res) => week.getCurrentWeek(req, res));
-
 // ?season={season}&seasonType={seasonType}&week={week}
 app.get('/', (req, res) => week.getWeek(req, res));
 

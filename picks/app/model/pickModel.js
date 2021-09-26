@@ -54,68 +54,6 @@ Pick.getUsersPicksByWeek = function getUsersPicksByWeek(userId, season, week, se
     });
 }
 
-Pick.getPicksByWeek = function getPicksByWeek(season, week, seasonType, token, result) {
-    var userToken = jwtDecode(token)
-    var sql = mysql.createConnection(config);
-    var username = userToken['cognito:username'];
-    sql.connect(function(connectErr){
-        if (connectErr) {
-            console.log(connectErr);
-            result(connectErr, null);
-        }
-        sql.query(        
-            "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, g.away_team_id, g.home_team_id, g.pick_submit_by_date " +
-            "FROM picks p, games g, users u " + 
-            "WHERE p.game_id = g.game_id " + 
-            "AND g.season = ? " + 
-            "AND g.week = ? " +
-            "AND g.season_type = ? " +
-            "AND u.user_id = p.user_id " +
-            "AND u.user_name = ? " +
-            "ORDER BY g.start_time ASC", [season, week, seasonType, username], function(err, res) {
-            sql.destroy();
-            if(err) {
-                console.log(err);
-                result(err, null);
-            }
-            else {
-                Pick.picksObjectMapper(res, function(mapppingErr, picksObject){
-                    console.log(picksObject);
-                    result(null, picksObject);
-                });
-            }
-        });
-    });
-}
-
-Pick.getWeekPicksByGame = function getWeekPicksByGame(season, week, seasonType, result) {
-    var sql = mysql.createConnection(config);
-
-    sql.connect(function(connectErr){
-        if (connectErr) {
-            console.error(connectErr);
-            result(connectErr, null);
-        }
-        sql.query(
-            "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, u.user_inits, u.first_name, u.last_name, g.pick_submit_by_date " +
-            "FROM picks p, users u, games g " + 
-            "WHERE p.user_id = u.user_id " + 
-            "AND g.week = ? " + 
-            "AND g.season = ? " +
-            "AND g.season_type = ? " +
-            "AND g.game_id = p.game_id " +
-            "AND g.pick_submit_by_date < ? order by u.first_name, u.last_name", 
-            [week, season, seasonType, new Date()], function(err, res) {
-            sql.destroy();
-            if(err) {
-                console.error(err);
-                result(err, null);
-            }
-            result(null, res);
-        });
-    });
-}
-
 Pick.getCurrentPicks = function getCurrentPicks(token, result) {
     var userToken = jwtDecode(token)
     var sql = mysql.createConnection(config);
@@ -143,10 +81,8 @@ Pick.getCurrentPicks = function getCurrentPicks(token, result) {
                 result(err, null);
             }
             else {
-                Pick.picksObjectMapper(res, function(mapppingErr, picksObject){
-                    console.log(picksObject);
-                    result(null, picksObject);
-                });
+                console.log(res);
+                result(null, res);
             }
         });
     });

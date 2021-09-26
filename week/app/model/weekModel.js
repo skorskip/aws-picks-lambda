@@ -10,20 +10,31 @@ var Week = function(week){
     this.teams = week.teams;
 };
 
-Week.getWeek = function getWeek(season, week, seasonType, result){
-    var getWeekSQL = new Promise((resolve, reject) => {
-        Week.getWeekSQL(season, week, seasonType, function(err, data){
+Week.getWeek = function getWeek(season, week, seasonType, token, result){
+
+    var games = new Promise((resolve, reject) => {
+        Week.getWeekSQL(season, week, seasonType, function(err, games){
             if(err) reject(err);  
-            resolve(data);
+            resolve(games);
         });
     });
 
-    getWeekSQL.then(function(data, err) {
-        if(err) {
-            console.log(err);
-            result(err, null);
-        }
-        Week.weekMapper(data, season, week, seasonType, function(errMapping, weekObject){
+    var picks = new Promise((resolve, reject) => {
+        shared.picksByWeek(season, seasonType, week, token, config, function(picksByWeekErr, pickByWeek) {
+            if(picksByWeekErr) reject(picksByWeekErr);
+            resolve(pickByWeek);        
+        });
+    });
+
+    var userPicks = new Promise((resolve, reject) => {
+        shared.userPicksByWeek(season, seasonType, week, config, function(userPicksByWeekErr, userPicksByWeek) {
+            if(userPicksByWeekErr) reject(userPicksByWeekErr);
+            resolve(userPicksByWeek);
+        });
+    });
+
+    Promise.all([games, picks, userPicks]).then((values) => {
+        Week.weekMapper(values[0], values[1], values[2], season, week, seasonType, function(errMapping, weekObject){
             if(errMapping) {
                 console.log(errMapping);
                 result(errMapping, null);
@@ -31,23 +42,8 @@ Week.getWeek = function getWeek(season, week, seasonType, result){
             console.log(weekObject);
             result(null, weekObject);
         });
-    });
-}
-
-Week.getCurrentWeek = function getCurrentWeek(req, result) {
-    shared.league(config, function(err,settings){
-        if(err) {
-            console.log(err);
-            result(err, null);
-        }
-                
-        var currWeekObj = {};
-        currWeekObj.season = settings.currentSeason;
-        currWeekObj.week = settings.currentWeek;
-        currWeekObj.seasonType = settings.currentSeasonType;
-    
-        console.log(currWeekObj);
-        result(null, currWeekObj);
+    }).catch(error => {
+        result(error, null);
     });
 }
 
@@ -69,31 +65,28 @@ Week.getWeekSQL = function getWeekSQL(season, week, seasonType, result) {
             "ORDER BY start_time", [
                 season, 
                 week, 
-                seasonType, 
-                season, 
-                week, 
                 seasonType
             ], function(err, data){
             sql.destroy();
             if(err) { 
-                console.log(err);
+                console.error(err);
                 result(err, null);
             } else {
-                console.log(data);
                 result(null, data);
             }
         });
     });
-    
 };
 
-Week.weekMapper = function(games, season, week, seasonType, result) {
+Week.weekMapper = function(games, picks, userPicks, season, week, seasonType, result) {
     var weekObject = {};
     weekObject.games = games;
+    weekObject.picks = picks;
+    weekObject.userPicks = userPicks
     weekObject.number = week;
     weekObject.season = season;
     weekObject.seasonType = seasonType;
-    
+
     var teams = [];
     if(games.length > 0) {
         games.forEach(game => {
