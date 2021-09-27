@@ -154,7 +154,7 @@ Message.setReminder = function setReminder(body, result) {
                 const response = await web.reminders.add({
                     text: "Time to make your picks!",
                     user: body.slack_user_id,
-                    time: remindTime.getTimezoneOffset().toString(),
+                    time: (remindTime.getTime()/1000).toString(),
                 });
 
                 result(null, {status: "SUCCESS", message: response});
