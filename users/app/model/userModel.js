@@ -120,8 +120,13 @@ User.login = function login(token, result) {
             if(res.length === 0) {
                 result("Unauthorized", null);
             }
-            console.log(res);
-            result(null,res);
+
+            User.getUserDetails(res[0].user_id, function(detailsErr, details) {
+                if(detailsErr) console.error(detailsErr, null);
+                User.objectMapper(res[0], details[0], function(mapperError, response) {
+                    result(null, response);
+                })
+            });
         });
     });
 };
@@ -179,7 +184,7 @@ User.getUserDetails = function getUserDetails(userId, result) {
             console.error(connectErr);
             result(err, null);
         }
-        sql.query('SELECT s.user_id, s.user_type, s.max_picks, s.picks_penalty, r.pending_picks, r.picks,  r.ranking, r.wins, r.win_pct ' +
+        sql.query('SELECT s.max_picks, s.picks_penalty, r.pending_picks, r.picks,  r.ranking, r.wins, r.win_pct ' +
             'FROM season_users s, config c, rpt_user_stats r ' + 
             'WHERE c.status = \'active\' ' +   
             'AND s.season = JSON_VALUE(c.settings, \'$.currentSeason\') ' +
@@ -201,6 +206,13 @@ User.getUserDetails = function getUserDetails(userId, result) {
             }
         )
     });
+}
+
+User.objectMapper = function objectMapper(userInfo, userCurrSeasonData, result) {
+    var userObject = {};
+    userObject = userInfo;
+    userObject.current_season_data = userCurrSeasonData;
+    result(null, userObject);
 }
 
 module.exports = User;

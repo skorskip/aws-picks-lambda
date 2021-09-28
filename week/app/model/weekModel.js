@@ -83,7 +83,7 @@ Week.weekMapper = function(games, picks, userPicks, season, week, seasonType, re
     weekObject.games = games;
     weekObject.picks = picks;
     weekObject.userPicks = userPicks
-    weekObject.number = week;
+    weekObject.week = week;
     weekObject.season = season;
     weekObject.seasonType = seasonType;
 

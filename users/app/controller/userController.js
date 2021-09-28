@@ -37,10 +37,3 @@ exports.standings = function(req, res) {
     })
 };
 
-exports.getUserDetails = function(req, res) {
-    User.getUserDetails(req.query.userId, function(err, details) {
-        if(err) return res.status(500).send({error: true, message: "Error retrieving user's details"});
-        res.json(details) 
-    })
-}
-
