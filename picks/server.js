@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 var app = express();
 var cors = require('cors');
 var picks = require('./app/controller/pickController');
+var picksUser = require('./app/controller/picksUserController');
 
 if(process.env.NODE_ENV === 'local') {
     require('dotenv').config();
@@ -13,7 +14,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // others?user={user}&season={season}&seasonType={seasonType}&week={week}
-app.get('/others', (req, res) => picks.getUsersPicksByWeek(req, res));
+app.get('/others', (req, res) => picksUser.getUsersPicksByWeek(req, res));
 
 app.post('/create/:userId', (req, res) => picks.addPicks(req, res));
 app.post('/delete', (req, res) => picks.deletePicks(req,res));

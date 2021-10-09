@@ -1,7 +1,7 @@
 'use strict'
 const { WebClient } = require('@slack/web-api');
 var shared = require('picks-app-shared');
-var config = require('./db');
+var config = require('../utils/db');
 
 var Message = function(){}
 

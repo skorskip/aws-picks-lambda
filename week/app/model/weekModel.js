@@ -1,13 +1,17 @@
 'user strict'
 var mysql = require('mysql');
-var config = require('./db');
+var config = require('../utils/db');
 var shared = require('picks-app-shared');
+var queries = require('../utils/queries');
 
-var Week = function(week){
-    this.number = week.number;
-    this.games = week.games;
-    this.season = week.season;
-    this.teams = week.teams;
+var Week = function(season, week, seasonType, games, picks, teams, userPicks){
+    this.number = week;
+    this.games = games;
+    this.season = season;
+    this.seasonType = seasonType;
+    this.teams = teams;
+    this.picks = picks;
+    this.userPicks = userPicks
 };
 
 Week.getWeek = function getWeek(season, week, seasonType, token, result){
@@ -36,13 +40,14 @@ Week.getWeek = function getWeek(season, week, seasonType, token, result){
     Promise.all([games, picks, userPicks]).then((values) => {
         Week.weekMapper(values[0], values[1], values[2], season, week, seasonType, function(errMapping, weekObject){
             if(errMapping) {
-                console.log(errMapping);
+                console.error(errMapping);
                 result(errMapping, null);
             }
             console.log(weekObject);
             result(null, weekObject);
         });
     }).catch(error => {
+        console.error(error);
         result(error, null);
     });
 }
@@ -57,12 +62,7 @@ Week.getWeekSQL = function getWeekSQL(season, week, seasonType, result) {
         } 
 
         sql.query(
-            "SELECT * FROM games " +
-            "WHERE season = ? " + 
-            "AND week = ? " + 
-            "AND season_type = ? " +
-            "AND home_spread is not NULL " +
-            "ORDER BY start_time", [
+            queries.ALL_GAMES_BY_WEEK, [
                 season, 
                 week, 
                 seasonType
@@ -79,14 +79,6 @@ Week.getWeekSQL = function getWeekSQL(season, week, seasonType, result) {
 };
 
 Week.weekMapper = function(games, picks, userPicks, season, week, seasonType, result) {
-    var weekObject = {};
-    weekObject.games = games;
-    weekObject.picks = picks;
-    weekObject.userPicks = userPicks
-    weekObject.week = week;
-    weekObject.season = season;
-    weekObject.seasonType = seasonType;
-
     var teams = [];
     if(games.length > 0) {
         games.forEach(game => {
@@ -98,7 +90,8 @@ Week.weekMapper = function(games, picks, userPicks, season, week, seasonType, re
     shared.team(teams, config, function(err, teams){
         if(err) result(err, null);
         weekObject.teams = teams;
-        result(null, weekObject);
+        var response = new Week(season, week, seasonType, games, picks, teams, userPicks);
+        result(null, response);
     });
 };
 

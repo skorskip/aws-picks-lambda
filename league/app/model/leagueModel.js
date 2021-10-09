@@ -1,6 +1,6 @@
 'use strict'
 var mysql = require('mysql');
-var config = require('./db');
+var config = require('../utils/db');
 var shared = require('picks-app-shared');
 var League = function(){}
 
