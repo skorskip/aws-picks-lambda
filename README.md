@@ -2,6 +2,16 @@
 
 Micro service architecture built for the Picks App.
 Each folder represents an individual micro service deployed as lambda using Claudia.js.
+ * league
+    * league settings
+ * messages
+    * slack integrated apis
+ * picks
+    * editting picks
+ * users
+    * user information
+ * week
+    * all game, pick data for a given week
 
 ## Running Locally
 In command line run below command to use local .env file, which each micro service has in its folder.
