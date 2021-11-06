@@ -29,3 +29,10 @@ exports.setReminder = function(req, res) {
         res.json(reminderRes);
     });
 }
+
+exports.getProfileImage = function(req, res) {
+    Message.getProfileImage(req.params.userId, function(err, image) {
+        if(err) return res.status(500).send({error: true, message: "Error getting image", content: err});
+        res.json(image);
+    });
+}

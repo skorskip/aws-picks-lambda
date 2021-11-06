@@ -6,31 +6,32 @@ var Game = require('./game/gameModel');
 var PolicySubmitPicks = require('./policy/policySubmitPicks');
 var PolicyEditPicks = require('./policy/policyEditPicks');
 var PicksByWeek = require('./picks/picksByWeek');
-const UserPicksByWeek = require('./picks/userPicksByWeek');
+var UserPicksByWeek = require('./picks/userPicksByWeek');
+var Fetch = require('./db/fetch');
 
-exports.league = function(dbConfig, result) {
-    League.leagueSettings(dbConfig, function(err, res) {
+exports.league = function(result) {
+    League.leagueSettings(function(err, res) {
         if(err) result(err, null);
         result(null, res);
     });
 };
 
-exports.team  = function(teamIds, dbConfig, result) {
-    Team.getTeamsById(teamIds, dbConfig, function(err, res) {
+exports.team  = function(teamIds, result) {
+    Team.getTeamsById(teamIds, function(err, res) {
         if(err) result(err, null);
         result(null, res);
     });
  };
  
- exports.game = function(gameIds, dbConfig, result) {
-     Game.getGamesById(gameIds, dbConfig, function(err, res) {
+ exports.game = function(gameIds, result) {
+     Game.getGamesById(gameIds, function(err, res) {
          if(err) result(err, null);
          result(null, res);
      });
  };
 
- exports.policySubmitPicks = function(userId, picks, dbConfig, result) {
-     PolicySubmitPicks.policy(userId, picks, dbConfig, function(err, res) {
+ exports.policySubmitPicks = function(userId, picks, result) {
+     PolicySubmitPicks.policy(userId, picks, function(err, res) {
         if(err) result(err, null);
         result(null, res);
      });
@@ -43,16 +44,23 @@ exports.team  = function(teamIds, dbConfig, result) {
      });
  };
 
- exports.picksByWeek = function(season, seasonType, week, token, dbConfig, result) {
-    PicksByWeek.getPicksByWeek(season, seasonType, week, token, dbConfig, function(err, res) {
+ exports.picksByWeek = function(season, seasonType, week, token, result) {
+    PicksByWeek.getPicksByWeek(season, seasonType, week, token, function(err, res) {
         if(err) result(err, null);
         result(null, res);
     });
  };
 
- exports.userPicksByWeek = function(season, seasonType, week, dbConfig, result) {
-     UserPicksByWeek.getUserPicksByWeek(season, seasonType, week, dbConfig, function(err, res) {
+ exports.userPicksByWeek = function(season, seasonType, week, result) {
+     UserPicksByWeek.getUserPicksByWeek(season, seasonType, week, function(err, res) {
          if(err) result(err, null);
          result(null, res);
      });
  };
+
+ exports.fetch = function(query, params, result) {
+     Fetch.query(query, params, function(err, res) {
+         if(err) result(err, null);
+         result(null, res);
+     })
+ }

@@ -1,7 +1,6 @@
 'user strict'
-var mysql = require('mysql');
-var config = require('../utils/db');
 const queries = require('../utils/queries');
+var shared = require('picks-app-shared');
 
 var UserStanding = function(userStanding) {
     this.user_id = userStanding.user_id;
@@ -20,24 +19,15 @@ var UserStanding = function(userStanding) {
 }
 
 UserStanding.standings = function standings(season, seasonType, week, result) {
-    var sql = mysql.createConnection(config);
-
-    sql.connect(function(connectErr){
-        if (connectErr) {
-            console.error(connectErr);
-            result(connectErr, null);
+    shared.fetch(queries.USER_STANDINGS, [season, seasonType, week], function(err, res) {
+        if(err) {
+            console.error(err);
+            result(err, null);
         }
-        sql.query(queries.USER_STANDINGS, [season, seasonType, week], function(err, res) {
-                sql.destroy();
-                if(err) {
-                    console.error(err);
-                    result(err, null);
-                }
-                else {
-                    console.log(res);
-                    result(null, res[0]);
-                }
-            });
+        else {
+            console.log(res);
+            result(null, res[0]);
+        }
     });
 };
 

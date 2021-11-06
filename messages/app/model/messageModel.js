@@ -1,12 +1,11 @@
 'use strict'
 const { WebClient } = require('@slack/web-api');
 var shared = require('picks-app-shared');
-var config = require('../utils/db');
 
 var Message = function(){}
 
 Message.announcements = function announcements(body, result){
-    shared.league(config, function(err, settings){
+    shared.league(function(err, settings){
         if(err) {
             console.error(err);
             result(err, null);
@@ -64,7 +63,7 @@ Message.announcements = function announcements(body, result){
 }
 
 Message.activeThread = function activeThread(body, result) {
-    shared.league(config, function(err, settings){
+    shared.league(function(err, settings){
         if(err) {
             console.error(err);
             result(err, null);
@@ -95,7 +94,7 @@ Message.activeThread = function activeThread(body, result) {
 }
 
 Message.chatThread = function chatThread(result){
-    shared.league(config, function(err, settings){
+    shared.league(function(err, settings){
         if(err) {
             console.error(err);
             result(err, null);
@@ -137,7 +136,7 @@ Message.chatThread = function chatThread(result){
 }
 
 Message.setReminder = function setReminder(body, result) {
-    shared.league(config, function(err, settings) {
+    shared.league(function(err, settings) {
         if(err) {
             console.error(err);
             result(err, null);
@@ -164,6 +163,30 @@ Message.setReminder = function setReminder(body, result) {
             }
         })();
     });
+}
+
+Message.getProfileImage = function getProfileImage(userId, result) {
+    shared.league(function(err, settings) {
+        if(err) {
+            console.error(err);
+            result(err, null);
+        }
+        const token = settings.messageSource.token;
+        const web = new WebClient(token);
+        (async () => {
+            try {
+                const response = await web.users.info({
+                    user: userId
+                });
+
+                let image = response.profile.image_original;
+                result(null, {status: "SUCCESS", imageURL: image})
+            } catch(e){
+                console.error(e);
+                result(err, null);
+            }
+        })()
+    })
 }
 
 module.exports = Message;

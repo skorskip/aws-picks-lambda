@@ -1,5 +1,5 @@
 var queries = {
-    ALL_GAMES_BY_WEELK : "SELECT * FROM games " +
+    ALL_GAMES_BY_WEEK : "SELECT * FROM games " +
         "WHERE season = ? " + 
         "AND week = ? " + 
         "AND season_type = ? " +

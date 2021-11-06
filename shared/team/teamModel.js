@@ -1,5 +1,7 @@
 'user strict';
-var mysql = require('mysql');
+var fetch = require('../db/fetch');
+
+const query = "SELECT * FROM teams WHERE team_id in (?)";
 
 var Team = function(team){
     this.team_city          = team.team_city;
@@ -10,27 +12,12 @@ var Team = function(team){
     this.display_color      = team.display_color;
 };
 
-Team.getTeamsById = function getTeamsById(teamIds, dbConfig, result) {
+Team.getTeamsById = function getTeamsById(teamIds, result) {
 
     if(teamIds.length > 0) {
-        var sql = mysql.createConnection(dbConfig);
-
-        sql.connect(function(err){
-            if(err) {
-                console.log(err);
-                result(err, null);
-            }
-            sql.query("SELECT * FROM teams WHERE team_id in (?)", [teamIds], function(err, res){
-                sql.destroy();
-                if(err) {
-                    console.log(err);
-                    result(err, null);
-                }
-                else {
-                    console.log(res);
-                    result(null, res);
-                }
-            });
+        fetch.query(query, [teamIds], function(err, res){
+            if(err) result(err, null);
+            result(null, res);
         });
     } else {
         console.log("[]");

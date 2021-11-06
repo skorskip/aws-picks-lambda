@@ -1,7 +1,7 @@
 'use strict'
-var mysql = require('mysql');
-var config = require('../utils/db');
+
 var shared = require('picks-app-shared');
+var queries = require('../utils/queries');
 
 const gameSort = (a, b) => {
     if(a.game_id > b.game_id) return 1;
@@ -20,32 +20,23 @@ var PicksUser = function(game, homeTeam, awayTeam, pick, winning_team_id, game_s
 }
 
 PicksUser.getUsersPicksByWeek = function getUsersPicksByWeek(userId, season, week, seasonType, result) {
-    var sql = mysql.createConnection(config);
-
-    sql.connect(function(connectErr){
-        if (connectErr) {
-            console.log(connectErr);
-            result(connectErr, null);
-        }
-        sql.query(queries.GET_USER_PICKS_BY_WEEK, 
-            [season, week, seasonType, userId, new Date()], 
-            function(err, res){
-            sql.destroy();
+    shared.fetch(queries.GET_USER_PICKS_BY_WEEK, 
+        [season, week, seasonType, userId, new Date()],
+        function(err, data) {
             if(err) {
-                console.log(err);
+                console.error(err);
                 result(err, null);
             }
-            else {
-                PicksUser.picksObjectMapper(res, function(mappingErr, picksObject){
-                    PicksUser.pickUserMapper(picksObject, function(userMappingErr, picksUserObject){
-                        console.log(picksUserObject);
-                        result(null, picksUserObject);
-                    })
 
-                });
-            }
+            PicksUser.picksObjectMapper(data, function(mappErr, picksList){
+                if(mappErr){
+                    console.error(mappErr); 
+                    result(mapErr, null)
+                }
+                let picksUserObject = PicksUser.pickUserMapper(picksList);
+                result(null, picksUserObject);
+            });
         });
-    });
 }
 
 PicksUser.picksObjectMapper = function picksObjectMapper(picks, result) {
@@ -64,18 +55,22 @@ PicksUser.picksObjectMapper = function picksObjectMapper(picks, result) {
     pickObject.teams = [];
     pickObject.games = [];
 
-    shared.team(teams, config, function(err, teamObjects){
-        if(err){}
+    shared.team(teams, function(err, teamObjects){
+        if(err){
+            result(err, null)
+        }
         pickObject.teams = teamObjects;
-        shared.game(games, config, function(err, gameObjects){
-            if(err){}
+        shared.game(games, function(err, gameObjects){
+            if(err){
+                result(err, null)
+            }
             pickObject.games = gameObjects;
-            result(null, pickObject);
+            result(null, pickObject)
         });
     });    
 }
 
-PicksUser.pickUserMapper = function pickUserMapper(pickUsers, result) {
+PicksUser.pickUserMapper = function pickUserMapper(pickUsers) {
     const picks = pickUsers.picks;
     const teams = pickUsers.teams;
     const games = pickUsers.games;
@@ -97,8 +92,7 @@ PicksUser.pickUserMapper = function pickUserMapper(pickUsers, result) {
         );
         picksList.push(picksUser);
     });
-
-    result(null, picksList);
+    return picksList;
 }
 
 module.exports = PicksUser;

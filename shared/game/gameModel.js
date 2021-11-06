@@ -1,5 +1,7 @@
 'user strict';
-var mysql = require('mysql');
+var fetch = require('../db/fetch');
+
+const query = "Select * from games where game_id in (?) ORDER BY start_time";
 
 var Game = function(game){
     this.game_id                    = game.game_id;
@@ -21,30 +23,13 @@ var Game = function(game){
     this.seconds_left_in_quarter    = game.seconds_left_in_quarter;
 };
 
-Game.getGamesById = function getGamesById(listGameIds, dbConfig, result) {
+Game.getGamesById = function getGamesById(listGameIds, result) {
     if(listGameIds.length > 0) {
-        var sql = mysql.createConnection(dbConfig);
-
-        sql.connect(function(err){
-            if(err) { 
-                console.log(err);
-                result(err, null);
-            }
-
-            sql.query("Select * from games where game_id in (?) ORDER BY start_time", [listGameIds], function (err, res) {
-                sql.destroy();
-                if(err) { 
-                    console.log(err);
-                    result(err, null);
-                }
-                else {
-                    console.log(res);
-                    result(null, res);
-                }
-            });
+        fetch.query(query, [listGameIds], function (err, res) {
+            if(err) result(err, null);
+            result(null, res);
         });
     } else {
-        console.log("[]");
         result(null, []);
     }
 };

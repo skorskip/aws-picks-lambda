@@ -1,6 +1,14 @@
 'use strict'
+var fetch = require('../db/fetch');
 
-var mysql = require('mysql');
+const query = "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, u.user_inits, u.first_name, u.last_name, g.pick_submit_by_date " +
+    "FROM picks p, users u, games g " + 
+    "WHERE p.user_id = u.user_id " + 
+    "AND g.week = ? " + 
+    "AND g.season = ? " +
+    "AND g.season_type = ? " +
+    "AND g.game_id = p.game_id " +
+    "AND g.pick_submit_by_date < ? order by u.first_name, u.last_name"
 
 var UserPicksByWeek = function(userPicksByWeek){
     this.pick_id                = userPicksByWeek.pick_id;                  
@@ -13,31 +21,10 @@ var UserPicksByWeek = function(userPicksByWeek){
     this.pick_submit_by_date    = userPicksByWeek.pick_submit_by_date;     
 };
 
-UserPicksByWeek.getUserPicksByWeek = function getWeekPicksByGame(season, seasonType, week, dbConfig, result) {
-    var sql = mysql.createConnection(dbConfig);
-
-    sql.connect(function(connectErr){
-        if (connectErr) {
-            console.error(connectErr);
-            result(connectErr, null);
-        }
-        sql.query(
-            "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, u.user_inits, u.first_name, u.last_name, g.pick_submit_by_date " +
-            "FROM picks p, users u, games g " + 
-            "WHERE p.user_id = u.user_id " + 
-            "AND g.week = ? " + 
-            "AND g.season = ? " +
-            "AND g.season_type = ? " +
-            "AND g.game_id = p.game_id " +
-            "AND g.pick_submit_by_date < ? order by u.first_name, u.last_name", 
-            [week, season, seasonType, new Date()], function(err, res) {
-            sql.destroy();
-            if(err) {
-                console.error(err);
-                result(err, null);
-            }
-            result(null, res);
-        });
+UserPicksByWeek.getUserPicksByWeek = function getWeekPicksByGame(season, seasonType, week, result) {
+    fetch.query(query,[week, season, seasonType, new Date()], function(err, res) {
+        if(err) result(err, null);
+        result(null, res);
     });
 }
 

@@ -1,6 +1,4 @@
 'use strict'
-var mysql = require('mysql');
-var config = require('../utils/db');
 var jwtDecode = require('jwt-decode');
 var shared = require('picks-app-shared');
 var queries = require('../utils/queries');
@@ -15,30 +13,16 @@ var Pick = function(pick) {
 
 Pick.getCurrentPicks = function getCurrentPicks(token, result) {
     var userToken = jwtDecode(token)
-    var sql = mysql.createConnection(config);
     var username = userToken['cognito:username'];
 
-    sql.connect(function(connectErr){
-        if (connectErr) {
-            console.log(connectErr);
-            result(connectErr, null);
-        }
-        sql.query(queries.GET_CURRENT_PICKS, [username], function(err, res) {
-            sql.destroy();
-            if(err) {
-                console.log(err);
-                result(err, null);
-            }
-            else {
-                console.log(res);
-                result(null, res);
-            }
-        });
+    shared.fetch(queries.GET_CURRENT_PICKS, [username], function(err, res) {
+        if(err) result(err, null);
+        result(null, res);
     });
 }
 
 Pick.addPicks = function addPicks(userId, picks, token, result) {
-    shared.policySubmitPicks(userId, picks, config, function(policyErr, policyRes) {
+    shared.policySubmitPicks(userId, picks, function(policyErr, policyRes) {
         if(policyErr) {
             console.error(policyErr);
             result(policyErr, null);
@@ -65,24 +49,10 @@ Pick.addPicksSQL = function addPicksSQL(picks, result) {
     let keys = ['pick_id','user_id','game_id','team_id', 'submitted_date'];
     let values = picks.map( obj => keys.map( key => obj[key]));
     let query = queries.ADD_PICKS.replace("$VALUES", keys.join(','));
-    var sql = mysql.createConnection(config);
 
-    sql.connect(function(connectErr){
-        if (connectErr) {
-            console.log(connectErr);
-            result(connectErr, null);
-        }
-        sql.query(query, [values], function(err, res) {
-            sql.destroy();
-            if(err) {
-                console.log(err);
-                result(null, err);
-            }
-            else {
-                console.log(res)
-                result(null, { message: "SUCCESS", result: res.insertId });
-            }
-        });
+    shared.fetch(query, [values], function(err, res) {
+        result(err, null);
+        result(null, { message: "SUCCESS", result: res.insertId });
     });
 }
 
@@ -92,29 +62,20 @@ Pick.deletePick = function deletePick(picks, token, result) {
             console.error(policyErr);
             result(policyErr, null);
         }
-        var sql = mysql.createConnection(config);
 
-        sql.connect(function(connectErr) {
-            if(connectErr) {
-                console.error(connectErr);
-                result(connectErr, null);
+        shared.fetch(queries.DELETE_PICKS, [picks], function(err,res){
+            if(err) {
+                console.error(err);
+                result(err, null);
             }
 
-            sql.query(queries.DELETE_PICKS, [picks], function(err, res) {
-                sql.destroy();
-                if(err) {
-                    console.error(err);
-                    result(err, null);
-                }
-
-                Pick.getCurrentPicks(token, function(currentErr, currentRes) {
-                    if(currentErr) {
-                        console.error(currentErr);
-                        result(currentErr, null);
-                    }   
-                    result(null, currentRes);
-                });
-            })
+            Pick.getCurrentPicks(token, function(currentErr, currentRes) {
+                if(currentErr) {
+                    console.error(currentErr);
+                    result(currentErr, null);
+                }   
+                result(null, currentRes);
+            });
         });
     });
 }

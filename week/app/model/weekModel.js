@@ -1,6 +1,4 @@
 'user strict'
-var mysql = require('mysql');
-var config = require('../utils/db');
 var shared = require('picks-app-shared');
 var queries = require('../utils/queries');
 
@@ -24,14 +22,14 @@ Week.getWeek = function getWeek(season, week, seasonType, token, result){
     });
 
     var picks = new Promise((resolve, reject) => {
-        shared.picksByWeek(season, seasonType, week, token, config, function(picksByWeekErr, pickByWeek) {
+        shared.picksByWeek(season, seasonType, week, token, function(picksByWeekErr, pickByWeek) {
             if(picksByWeekErr) reject(picksByWeekErr);
             resolve(pickByWeek);        
         });
     });
 
     var userPicks = new Promise((resolve, reject) => {
-        shared.userPicksByWeek(season, seasonType, week, config, function(userPicksByWeekErr, userPicksByWeek) {
+        shared.userPicksByWeek(season, seasonType, week, function(userPicksByWeekErr, userPicksByWeek) {
             if(userPicksByWeekErr) reject(userPicksByWeekErr);
             resolve(userPicksByWeek);
         });
@@ -53,28 +51,13 @@ Week.getWeek = function getWeek(season, week, seasonType, token, result){
 }
 
 Week.getWeekSQL = function getWeekSQL(season, week, seasonType, result) {
-    var sql = mysql.createConnection(config);
-
-    sql.connect(function(err){
+    shared.fetch(queries.ALL_GAMES_BY_WEEK, [season, week, seasonType], function(err, data){
         if(err) { 
-            console.log(err);
+            console.error(err);
             result(err, null);
-        } 
-
-        sql.query(
-            queries.ALL_GAMES_BY_WEEK, [
-                season, 
-                week, 
-                seasonType
-            ], function(err, data){
-            sql.destroy();
-            if(err) { 
-                console.error(err);
-                result(err, null);
-            } else {
-                result(null, data);
-            }
-        });
+        } else {
+            result(null, data);
+        }
     });
 };
 
@@ -87,9 +70,8 @@ Week.weekMapper = function(games, picks, userPicks, season, week, seasonType, re
         });
     }
 
-    shared.team(teams, config, function(err, teams){
+    shared.team(teams, function(err, teams){
         if(err) result(err, null);
-        weekObject.teams = teams;
         var response = new Week(season, week, seasonType, games, picks, teams, userPicks);
         result(null, response);
     });
