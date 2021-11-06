@@ -51,7 +51,10 @@ Pick.addPicksSQL = function addPicksSQL(picks, result) {
     let query = queries.ADD_PICKS.replace("$VALUES", keys.join(','));
 
     shared.fetch(query, [values], function(err, res) {
-        result(err, null);
+        if(err) {
+            console.error(err)
+            result(err, null);
+        }
         result(null, { message: "SUCCESS", result: res.insertId });
     });
 }
