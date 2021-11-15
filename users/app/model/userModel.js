@@ -3,19 +3,30 @@ var jwtDecode = require('jwt-decode');
 var queries = require('../utils/queries');
 var shared = require('picks-app-shared');
 
+var CurrentSeasonData = function(currSeasonData) {
+    this.max_picks      = currSeasonData.max_picks == null ? 0 : currSeasonData.max_picks;
+    this.picks_penalty  = currSeasonData.picks_penalty == null ? 0 : currSeasonData.picks_penalty;
+    this.pending_picks  = currSeasonData.pending_picks == null ? 0 : currSeasonData.pending_picks;
+    this.picks          = currSeasonData.picks == null ? 0 : currSeasonData.picks;
+    this.ranking        = currSeasonData.ranking == null ? 0 : currSeasonData.ranking;
+    this.wins           = currSeasonData.wins == null ? 0 : currSeasonData.wins;
+    this.win_pct        = currSeasonData.win_pct == null ? 0 : currSeasonData.win_pct;
+    this.prev_ranking   = currSeasonData.prev_ranking == null ? 0 : currSeasonData.prev_ranking;
+    this.bonus_nbr      = currSeasonData.bonus_nbr == null ? 0 : currSeasonData.bonus_nbr;
+}
+
 var User = function(userInfo, userCurrSeasonData) {
     this.user_id = userInfo.user_id;
     this.user_name = userInfo.user_name;
     this.first_name = userInfo.first_name;
     this.last_name = userInfo.last_name;
     this.user_inits = userInfo.user_inits;
-    this.password = userInfo.password;
     this.email = userInfo.email;
     this.status = userInfo.status;
     this.type = userInfo.type;
     this.slack_user_id = userInfo.slack_user_id;
-    this.current_season_data = userCurrSeasonData;
-
+    this.slack_user_image = userInfo.slack_user_image;
+    this.current_season_data = userCurrSeasonData == null ? null : new CurrentSeasonData(userCurrSeasonData);
 }
 
 User.updateUser = function updateUser(userId, user, result) {
@@ -81,36 +92,60 @@ User.login = function login(token, result) {
             result("Unauthorized", null);
         }
 
-        User.getUserDetails(res[0].user_id, function(detailsErr, details) {
+        User.getUserDetailsView(res[0].user_id, function(detailsErr, details) {
             if(detailsErr) console.error(detailsErr, null);
             result(null, new User(res[0],details[0]));
         });
     });
 };
 
+User.getAllUsers = function getAllUsers(season, seasonType, week, result) {
+    var allUsers = new Promise((resolve, reject) => { 
+        shared.fetch(queries.ALL_USERS, [], function(err, res) {
+            if(err) reject(err);
+            resolve(res);
+        });
+    });
+
+    var details = new Promise((resolve, reject) => {
+        User.getUserDetailsStorProc(season, seasonType, week, function(err, res) {
+            if(err) reject(err);
+            resolve(res);
+        })
+    });
+
+    Promise.all([allUsers, details]).then((values) => {
+        var fullUsers = [];
+        values[0].forEach(user => {
+          var userDetail = values[1][0].find(detail => detail.user_id == user.user_id);
+          fullUsers.push(new User(user, userDetail));  
+        });
+        result(null, fullUsers);
+    }).catch(error => {
+        console.error(error);
+        result(error, null);
+    })
+};
+
 User.updateView = function updateView(season, seasonType, week, result) {
     shared.fetch(queries.UPDATE_STAT_VIEW, [season, seasonType, week], function(err, res){
-        if(err) {
-            console.error(err);
-            result(err, null);
-        }
-        else {
-            console.log(res);
-            result(null, res);
-        }
+        if(err) result(err, null);
+        result(null, res);
     });
 };
 
-User.getUserDetails = function getUserDetails(userId, result) {
+User.getUserDetailsView = function getUserDetails(userId, result) {
     shared.fetch(queries.USER_DETAILS,[userId, userId], function(err, res) {
-        if(err) {
-            console.error(err);
-            result(err, null);
-        } else {
-            console.log(res);
-            result(null, res);
-        }
+        if(err) result(err, null);
+        result(null, res);
     });
+}
+
+User.getUserDetailsStorProc = function getUserDetailsStorProc(season, seasonType, week, result) {
+    shared.fetch(queries.USER_STANDINGS, [season, seasonType, week], function(err, res) {
+        if(err) result(err, null);
+        result(null, res);
+    })
 }
 
 module.exports = User;

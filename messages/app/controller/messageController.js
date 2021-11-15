@@ -31,7 +31,7 @@ exports.setReminder = function(req, res) {
 }
 
 exports.getProfileImage = function(req, res) {
-    Message.getProfileImage(req.params.userId, function(err, image) {
+    Message.getProfileImage(req.query.userId, function(err, image) {
         if(err) return res.status(500).send({error: true, message: "Error getting image", content: err});
         res.json(image);
     });

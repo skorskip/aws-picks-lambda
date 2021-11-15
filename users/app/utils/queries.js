@@ -16,6 +16,9 @@ var queries = {
     'FROM users ' +
     'WHERE (LOWER(user_name) = ?)',
 
+    ALL_USERS : 'SELECT * ' + 
+    'FROM users',
+
     USER_DETAILS : 'SELECT s.max_picks, s.picks_penalty, r.pending_picks, r.picks,  r.ranking, r.wins, r.win_pct ' +
     'FROM season_users s, config c, rpt_user_stats r ' + 
     'WHERE c.status = \'active\' ' +   

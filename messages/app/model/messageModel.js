@@ -175,7 +175,7 @@ Message.getProfileImage = function getProfileImage(userId, result) {
         const web = new WebClient(token);
         (async () => {
             try {
-                const response = await web.users.info({
+                const response = await web.users.profile.get({
                     user: userId
                 });
 

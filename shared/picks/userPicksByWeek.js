@@ -1,7 +1,7 @@
 'use strict'
 var fetch = require('../db/fetch');
 
-const query = "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, u.user_inits, u.first_name, u.last_name, g.pick_submit_by_date " +
+const query = "SELECT p.pick_id, p.game_id, p.team_id, p.user_id, u.user_inits, u.slack_user_image, u.first_name, u.last_name, g.pick_submit_by_date " +
     "FROM picks p, users u, games g " + 
     "WHERE p.user_id = u.user_id " + 
     "AND g.week = ? " + 
