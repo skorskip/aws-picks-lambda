@@ -14,7 +14,8 @@ const query = 'SELECT s.user_type, s.max_picks, r.pending_picks, r.picks ' +
 var messageEnum = {
     PASS_SUBMIT_DATE: 'PASS_SUBMIT_DATE',
     TOO_MANY_PICKS: 'TOO_MANY_PICKS',
-    NO_PICKS: 'NO_PICKS'
+    NO_PICKS: 'NO_PICKS',
+    NOT_ALLOWED: 'NOT_ALLOWED'
 }
 
 var statusEnum = {
@@ -39,7 +40,7 @@ PolicySubmitPicks.policy = function policy(userId, picks, result) {
 
         if(picks.find((pick) => new Date(pick.pick_submit_by_date) < new Date())) {
             result({status: statusEnum.ERROR, message: messageEnum.PASS_SUBMIT_DATE}, null);
-        } else if(totalPicks >= detailObj.max_picks) {
+        } else if(totalPicks >= detailObj.max_picks){
             result({
                 status: statusEnum.ERROR, 
                 message: messageEnum.TOO_MANY_PICKS, 
@@ -48,6 +49,8 @@ PolicySubmitPicks.policy = function policy(userId, picks, result) {
                     over: (totalPicks - detailObj.max_picks)
                 }
             }, null)
+        } else if(detailObj.user_type != "participant") { 
+            result({status: statusEnum.ERROR, message: messageEnum.NOT_ALLOWED}, null);
         } else {
             result(null, {status: statusEnum.SUCCESS})
         }
