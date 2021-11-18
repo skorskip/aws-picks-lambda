@@ -1,4 +1,5 @@
 'use strict'
+const { user } = require('../db/config');
 var fetch = require('../db/fetch');
 
 const query = 'SELECT s.user_type, s.max_picks, r.pending_picks, r.picks ' +
@@ -22,6 +23,12 @@ var statusEnum = {
     SUCCESS: 'SUCCESS',
     ERROR: 'ERROR'
 }
+var UserDetail = function(userDetail) {
+    this.user_type = userDetail.user_type;
+    this.max_picks = userDetail.max_picks;
+    this.pending_picks = userDetail.pending_picks;
+    this.picks = userDetail.picks;
+}
 
 var PolicySubmitPicks = function() {}
 
@@ -36,20 +43,21 @@ PolicySubmitPicks.policy = function policy(userId, picks, result) {
             result(detailErr, null);
         }
 
-        let totalPicks = picks.length + detailObj.pending_picks + detailObj.picks;
+        let userInfo = new UserDetail(detailObj);
+        let totalPicks = picks.length + userInfo.pending_picks + userInfo.picks;
 
         if(picks.find((pick) => new Date(pick.pick_submit_by_date) < new Date())) {
             result({status: statusEnum.ERROR, message: messageEnum.PASS_SUBMIT_DATE}, null);
-        } else if(totalPicks >= detailObj.max_picks){
+        } else if(totalPicks >= userInfo.max_picks){
             result({
                 status: statusEnum.ERROR, 
                 message: messageEnum.TOO_MANY_PICKS, 
                 data: { 
-                    limit: detailObj.max_picks, 
-                    over: (totalPicks - detailObj.max_picks)
+                    limit: userInfo.max_picks, 
+                    over: (totalPicks - userInfo.max_picks)
                 }
             }, null)
-        } else if(detailObj.user_type != "participant") { 
+        } else if(userInfo.user_type != "participant") { 
             result({status: statusEnum.ERROR, message: messageEnum.NOT_ALLOWED}, null);
         } else {
             result(null, {status: statusEnum.SUCCESS})
@@ -60,7 +68,7 @@ PolicySubmitPicks.policy = function policy(userId, picks, result) {
 PolicySubmitPicks.getDetailedUserInfo = function getDetailedUserInfo(userId, result) {
     fetch.query(query,[userId, userId], function(err, res) {
         if(err) result(err, null);
-        result(null, res);
+        result(null, res[0]);
     });
 }
 
