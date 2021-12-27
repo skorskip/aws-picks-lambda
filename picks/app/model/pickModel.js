@@ -394,6 +394,8 @@ Pick.submitPicksPolicy = function submitPicksPolicy (userId, picks, result) {
 
         let totalPicks = picks.length + detailObj.pending_picks + detailObj.picks;
 
+        console.log(totalPicks, detailObj.max_picks);
+
         if(picks.find((pick) => new Date(pick.pick_submit_by_date) < new Date())) {
             result({status: 'ERROR', message: 'PASS_SUBMIT_DATE'}, null);
         } else if(totalPicks >= detailObj.max_picks) {
@@ -436,7 +438,7 @@ Pick.getDetailedUserInfo = function getDetailedUserInfo(userId, result) {
                     result(err, null);
                 } else {
                     console.log(res);
-                    result(null, res);
+                    result(null, res[0]);
                 }
             }
         )
