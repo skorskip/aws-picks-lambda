@@ -29,6 +29,13 @@ var User = function(userInfo, userCurrSeasonData) {
     this.current_season_data = userCurrSeasonData == null ? null : new CurrentSeasonData(userCurrSeasonData);
 }
 
+var StatusEnum = {
+    FAILURE : "FAILURE",
+    SUCCESS : "SUCCESS",
+    UNAUTHORIZED : "UNAUTHORIZED",
+    COGNITO_USER : "cognito:username"
+}
+
 User.updateUser = function updateUser(userId, user, result) {
     shared.fetch(queries.UPDATE_USER, [
         user.user_name,
@@ -38,16 +45,16 @@ User.updateUser = function updateUser(userId, user, result) {
         user.password, 
         userId], function(err, res){
         if(err) {
-            console.error("FAILURE");
-            result(null, 'FAILURE');
+            console.error(StatusEnum.FAILURE);
+            result(StatusEnum.FAILURE, null);
         }
         else {
             if(res.affectedRows == 1) {
-                console.log("SUCCESS");
-                result(null, 'SUCCESS');
+                console.log(StatusEnum.SUCCESS);
+                result(null, StatusEnum.SUCCESS);
             } else {
-                console.log("SUCCESS");
-                result(null, 'FAILURE')
+                console.error(StatusEnum.FAILURE);
+                result(StatusEnum.FAILURE, null);
             }
         }
     });
@@ -69,19 +76,19 @@ User.deleteUser = function deleteUser(userId, result) {
 User.createUser = function createUser(user, result) {
     shared.fetch(queries.CREATE_USER, user, function(err, res) {
         if(err) {
-            console.error('FAILURE');
-            result(null, 'FAILURE');
+            console.error(StatusEnum.FAILURE);
+            result(null, StatusEnum.FAILURE);
         }
         else {
-            console.log("SUCCESS");
-            result(null, 'SUCCESS');
+            console.log(StatusEnum.SUCCESS);
+            result(null, StatusEnum.SUCCESS);
         }
     });
 };
 
 User.login = function login(token, result) {
     var userToken = jwtDecode(token);
-    var username = userToken['cognito:username']
+    var username = userToken[StatusEnum.COGNITO_USER]
     shared.fetch(queries.LOGIN_USER, [username.toLowerCase()], function(err, res) {
         if(err) {
             console.error(err);
@@ -89,7 +96,7 @@ User.login = function login(token, result) {
         }
 
         if(res.length === 0) {
-            result("Unauthorized", null);
+            result(StatusEnum.UNAUTHORIZED, null);
         }
 
         User.getUserDetailsView(res[0].user_id, function(detailsErr, details) {
