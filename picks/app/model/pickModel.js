@@ -398,7 +398,7 @@ Pick.submitPicksPolicy = function submitPicksPolicy (userId, picks, result) {
 
         if(picks.find((pick) => new Date(pick.pick_submit_by_date) < new Date())) {
             result({status: 'ERROR', message: 'PASS_SUBMIT_DATE'}, null);
-        } else if(totalPicks >= detailObj.max_picks) {
+        } else if(totalPicks > detailObj.max_picks) {
             result({
                 status: 'ERROR', 
                 message: 'TOO_MANY_PICKS', 
