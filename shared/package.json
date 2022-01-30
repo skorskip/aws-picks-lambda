@@ -1,6 +1,6 @@
 {
   "name": "picks-app-shared",
-  "version": "2.9.0",
+  "version": "2.9.2",
   "description": "Shared resources for the picks application",
   "main": "index.js",
   "scripts": {

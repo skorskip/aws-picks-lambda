@@ -46,15 +46,15 @@ User.updateUser = function updateUser(userId, user, result) {
         userId], function(err, res){
         if(err) {
             console.error(StatusEnum.FAILURE);
-            result(StatusEnum.FAILURE, null);
+            return result(StatusEnum.FAILURE, null);
         }
         else {
             if(res.affectedRows == 1) {
                 console.log(StatusEnum.SUCCESS);
-                result(null, StatusEnum.SUCCESS);
+                return result(null, StatusEnum.SUCCESS);
             } else {
                 console.error(StatusEnum.FAILURE);
-                result(StatusEnum.FAILURE, null);
+                return result(StatusEnum.FAILURE, null);
             }
         }
     });
@@ -64,11 +64,11 @@ User.deleteUser = function deleteUser(userId, result) {
     shared.fetch(queries.DELETE_USER, userId, function(err, res) {
         if(err) {
             console.error(err);
-            result(err, null);
+            return result(err, null);
         }
         else {
             console.log(res);
-            result(null, res);
+            return result(null, res);
         }
     });
 };
@@ -77,11 +77,11 @@ User.createUser = function createUser(user, result) {
     shared.fetch(queries.CREATE_USER, user, function(err, res) {
         if(err) {
             console.error(StatusEnum.FAILURE);
-            result(null, StatusEnum.FAILURE);
+            return result(null, StatusEnum.FAILURE);
         }
         else {
             console.log(StatusEnum.SUCCESS);
-            result(null, StatusEnum.SUCCESS);
+            return result(null, StatusEnum.SUCCESS);
         }
     });
 };
@@ -92,16 +92,16 @@ User.login = function login(token, result) {
     shared.fetch(queries.LOGIN_USER, [username.toLowerCase()], function(err, res) {
         if(err) {
             console.error(err);
-            result(err, null);
+            return result(err, null);
         }
 
         if(res.length === 0) {
-            result(StatusEnum.UNAUTHORIZED, null);
+            return result(StatusEnum.UNAUTHORIZED, null);
         }
 
         User.getUserDetailsView(res[0].user_id, function(detailsErr, details) {
             if(detailsErr) console.error(detailsErr, null);
-            result(null, new User(res[0],details[0]));
+            return result(null, new User(res[0],details[0]));
         });
     });
 };
@@ -127,31 +127,31 @@ User.getAllUsers = function getAllUsers(season, seasonType, week, result) {
           var userDetail = values[1][0].find(detail => detail.user_id == user.user_id);
           fullUsers.push(new User(user, userDetail));  
         });
-        result(null, fullUsers);
+        return result(null, fullUsers);
     }).catch(error => {
         console.error(error);
-        result(error, null);
+        return result(error, null);
     })
 };
 
 User.updateView = function updateView(season, seasonType, week, result) {
     shared.fetch(queries.UPDATE_STAT_VIEW, [season, seasonType, week], function(err, res){
-        if(err) result(err, null);
-        result(null, res);
+        if(err) return result(err, null);
+        return result(null, res);
     });
 };
 
 User.getUserDetailsView = function getUserDetails(userId, result) {
     shared.fetch(queries.USER_DETAILS,[userId, userId], function(err, res) {
-        if(err) result(err, null);
-        result(null, res);
+        if(err) return result(err, null);
+        return result(null, res);
     });
 }
 
 User.getUserDetailsStorProc = function getUserDetailsStorProc(season, seasonType, week, result) {
     shared.fetch(queries.USER_STANDINGS, [season, seasonType, week], function(err, res) {
-        if(err) result(err, null);
-        result(null, res);
+        if(err) return result(err, null);
+        return result(null, res);
     })
 }
 

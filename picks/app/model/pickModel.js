@@ -16,8 +16,8 @@ Pick.getCurrentPicks = function getCurrentPicks(token, result) {
     var username = userToken['cognito:username'];
 
     shared.fetch(queries.GET_CURRENT_PICKS, [username], function(err, res) {
-        if(err) result(err, null);
-        result(null, res);
+        if(err) return result(err, null);
+        return result(null, res);
     });
 }
 
@@ -25,20 +25,20 @@ Pick.addPicks = function addPicks(userId, picks, token, result) {
     shared.policySubmitPicks(userId, picks, function(policyErr, policyRes) {
         if(policyErr) {
             console.error(policyErr);
-            result(policyErr, null);
+            return result(policyErr, null);
         }
 
         Pick.addPicksSQL(picks, function(addErr, addRes) {
             if(addErr) {
                 console.error(addErr);
-                result(addErr, null);
+                return result(addErr, null);
             }
             Pick.getCurrentPicks(token, function(currentErr, currentRes) {
                 if(currentErr) {
                     console.error(currentErr);
-                    result(currentErr, null);
-                }   
-                result(null, currentRes);
+                    return result(currentErr, null);
+                }
+                return result(null, currentRes);
             });
         });
     });
@@ -53,9 +53,9 @@ Pick.addPicksSQL = function addPicksSQL(picks, result) {
     shared.fetch(query, [values], function(err, res) {
         if(err) {
             console.error(err)
-            result(err, null);
+            return result(err, null);
         }
-        result(null, { message: "SUCCESS", result: res.insertId });
+        return result(null, { message: "SUCCESS", result: res.insertId });
     });
 }
 
@@ -63,21 +63,21 @@ Pick.deletePick = function deletePick(picks, token, result) {
     shared.policyEditPicks(picks, function(policyErr, policyRes) {
         if(policyErr) {
             console.error(policyErr);
-            result(policyErr, null);
+            return result(policyErr, null);
         }
 
         shared.fetch(queries.DELETE_PICKS, [picks], function(err,res){
             if(err) {
                 console.error(err);
-                result(err, null);
+                return result(err, null);
             }
 
             Pick.getCurrentPicks(token, function(currentErr, currentRes) {
                 if(currentErr) {
                     console.error(currentErr);
-                    result(currentErr, null);
+                    return result(currentErr, null);
                 }   
-                result(null, currentRes);
+                return result(null, currentRes);
             });
         });
     });
@@ -87,19 +87,19 @@ Pick.updatePicks = function updatePicks(picks, token, result) {
     shared.policyEditPicks(picks, function(policyErr, policyRes) {
         if(policyErr) {
             console.error(policyErr);
-            result(policyErr, null);
+            return result(policyErr, null);
         }
         Pick.addPicksSQL(picks, function(addErr, addRes){
             if(addErr) {
                 console.error(addErr);
-                result(addErr, null);
+                return result(addErr, null);
             }
             Pick.getCurrentPicks(token, function(currentErr, currentRes) {
                 if(currentErr) {
                     console.error(currentErr);
-                    result(currentErr, null);
+                    return result(currentErr, null);
                 }   
-                result(null, currentRes);
+                return result(null, currentRes);
             });
         })
     });

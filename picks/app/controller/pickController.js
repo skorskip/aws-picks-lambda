@@ -4,8 +4,11 @@ var Pick = require('../model/pickModel.js');
 
 exports.addPicks = function(req, res) {
     Pick.addPicks(req.params.userId, req.body, req.headers.authorization, function(err, status) {
-        if(err) return res.status(500).send({error: true, message: "Error adding picks", content: err});
-        res.json(status);
+        if(err) {
+            res.status(500).send({error: true, message: "Error adding picks", content: err});
+        } else {
+            res.json(status);
+        }
     })
 }
 

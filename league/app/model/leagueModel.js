@@ -6,12 +6,10 @@ League.leagueSettings = function leagueSettings(result){
     shared.league(function(err, res) {
         if(err) {
             console.error(err);
-            result(err, null);
+            return result(err, null);
         }
-        else {
-            console.log(res);
-            result(null, res);
-        }
+        console.log(res);
+        return result(null, res);
     });
 };
 

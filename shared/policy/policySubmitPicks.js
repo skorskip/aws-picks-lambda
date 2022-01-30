@@ -1,5 +1,4 @@
 'use strict'
-const { user } = require('../db/config');
 var fetch = require('../db/fetch');
 
 const query = 'SELECT s.user_type, s.max_picks, r.pending_picks, r.picks ' +
@@ -48,7 +47,7 @@ PolicySubmitPicks.policy = function policy(userId, picks, result) {
 
         if(picks.find((pick) => new Date(pick.pick_submit_by_date) < new Date())) {
             result({status: statusEnum.ERROR, message: messageEnum.PASS_SUBMIT_DATE}, null);
-        } else if(totalPicks >= userInfo.max_picks){
+        } else if(totalPicks > userInfo.max_picks){
             result({
                 status: statusEnum.ERROR, 
                 message: messageEnum.TOO_MANY_PICKS, 

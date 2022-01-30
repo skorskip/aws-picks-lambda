@@ -39,14 +39,14 @@ Week.getWeek = function getWeek(season, week, seasonType, token, result){
         Week.weekMapper(values[0], values[1], values[2], season, week, seasonType, function(errMapping, weekObject){
             if(errMapping) {
                 console.error(errMapping);
-                result(errMapping, null);
+                return result(errMapping, null);
             }
             console.log(weekObject);
-            result(null, weekObject);
+            return result(null, weekObject);
         });
     }).catch(error => {
         console.error(error);
-        result(error, null);
+        return result(error, null);
     });
 }
 
@@ -54,9 +54,9 @@ Week.getWeekSQL = function getWeekSQL(season, week, seasonType, result) {
     shared.fetch(queries.ALL_GAMES_BY_WEEK, [season, week, seasonType], function(err, data){
         if(err) { 
             console.error(err);
-            result(err, null);
+            return result(err, null);
         } else {
-            result(null, data);
+            return result(null, data);
         }
     });
 };
@@ -71,9 +71,9 @@ Week.weekMapper = function(games, picks, userPicks, season, week, seasonType, re
     }
 
     shared.team(teams, function(err, teams){
-        if(err) result(err, null);
+        if(err) return result(err, null);
         var response = new Week(season, week, seasonType, games, picks, teams, userPicks);
-        result(null, response);
+        return result(null, response);
     });
 };
 
