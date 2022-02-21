@@ -31,7 +31,11 @@ var queries = {
 
     UPDATE_STAT_VIEW : 'CALL update_weekly_user_stats(?, ?, ?)',
 
-    USER_STANDINGS : 'CALL get_user_standings(?,?,?)'
+    USER_STANDINGS : 'CALL get_user_standings(?,?,?)',
+
+    USER_UPDATE_IMG : 'UPDATE users SET ' +
+    'slack_user_image = ? ' +
+    'WHERE user_id = ?'
 }
 
 module.exports = queries;

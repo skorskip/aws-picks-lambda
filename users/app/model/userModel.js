@@ -155,4 +155,33 @@ User.getUserDetailsStorProc = function getUserDetailsStorProc(season, seasonType
     })
 }
 
+User.updateUserImage = function updateUserImage(token, result) {
+    var userToken = jwtDecode(token);
+    var username = userToken[StatusEnum.COGNITO_USER];
+
+    shared.fetch(queries.LOGIN_USER, [username.toLowerCase()], function(getUserErr, users) {
+        if(getUserErr) {
+            console.error(getUserErr);
+            return result(getUserErr, null);
+        }
+
+        var user = users[0]
+    
+        shared.slackProfile(user.slack_user_id, function(getSlackErr, slackProfile) {
+            if(getSlackErr) {
+                console.error(getSlackErr);
+                return result(getSlackErr, null);
+            }
+
+            shared.fetch(queries.USER_UPDATE_IMG, [slackProfile.imageURL, user.user_id], function(updateErr, updateRes) {
+                if(updateErr) {
+                    console.error(updateErr);
+                    return result(updateErr, null);
+                }
+                return result(null, StatusEnum.SUCCESS);
+            });
+        });
+    });
+}
+
 module.exports = User;

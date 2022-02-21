@@ -31,8 +31,8 @@ var UserDetail = function(userDetail) {
 
 var PolicySubmitPicks = function() {}
 
-PolicySubmitPicks.policy = function policy(userId, picks, result) {
-    if(picks.length === 0) {
+PolicySubmitPicks.policy = function policy(userId, games, result) {
+    if(games.length === 0) {
         result({status: statusEnum.ERROR, message: messageEnum.NO_PICKS}, null);
     }
 
@@ -43,9 +43,9 @@ PolicySubmitPicks.policy = function policy(userId, picks, result) {
         }
 
         let userInfo = new UserDetail(detailObj);
-        let totalPicks = picks.length + userInfo.pending_picks + userInfo.picks;
+        let totalPicks = games.length + userInfo.pending_picks + userInfo.picks;
 
-        if(picks.find((pick) => new Date(pick.pick_submit_by_date) < new Date())) {
+        if(games.find((game) => new Date(game.pick_submit_by_date) < new Date())) {
             result({status: statusEnum.ERROR, message: messageEnum.PASS_SUBMIT_DATE}, null);
         } else if(totalPicks > userInfo.max_picks){
             result({

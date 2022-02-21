@@ -36,3 +36,10 @@ exports.getAllUsers = function(req, res) {
         res.json(users);
     })
 };
+
+exports.updateUserProfile = function(req, res) {
+    User.updateUserImage(req.headers.authorization, function(err, updateResult) {
+        if(err) return res.status(500).send({error: true, message: "Error updating user image", content: err});
+        res.json(updateResult);
+    })
+};

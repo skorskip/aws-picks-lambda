@@ -18,6 +18,7 @@ app.post('/register', (req, res) => users.createUser(req, res));
 app.get('/login', (req, res) => users.login(req, res));
 // standings?season={season}&seasonType={seasonType}&week={week}
 app.get('/standings', (req, res) => users.getAllUsers(req, res));
+app.get('/update-user-profile', (req, res) => users.updateUserProfile(req, res));
 
 if(process.env.NODE_ENV === 'local') {
     app.listen(3004, () => console.log('Ready'));

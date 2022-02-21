@@ -165,28 +165,4 @@ Message.setReminder = function setReminder(body, result) {
     });
 }
 
-Message.getProfileImage = function getProfileImage(userId, result) {
-    shared.league(function(err, settings) {
-        if(err) {
-            console.error(err);
-            return result(err, null);
-        }
-        const token = settings.messageSource.token;
-        const web = new WebClient(token);
-        (async () => {
-            try {
-                const response = await web.users.profile.get({
-                    user: userId
-                });
-
-                let image = response.profile.image_original;
-                return result(null, {status: "SUCCESS", imageURL: image})
-            } catch(e){
-                console.error(e);
-                return result(err, null);
-            }
-        })()
-    })
-}
-
 module.exports = Message;

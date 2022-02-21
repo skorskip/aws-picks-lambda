@@ -8,6 +8,7 @@ var PolicyEditPicks = require('./policy/policyEditPicks');
 var PicksByWeek = require('./picks/picksByWeek');
 var UserPicksByWeek = require('./picks/userPicksByWeek');
 var Fetch = require('./db/fetch');
+var Slack = require('./slack/slackProfile');
 
 exports.league = function(result) {
     League.leagueSettings(function(err, res) {
@@ -57,6 +58,13 @@ exports.team  = function(teamIds, result) {
          result(null, res);
      });
  };
+
+ exports.slackProfile = function(userId, result) {
+    Slack.slackProfile(userId, function(err, res) {
+        if(err) return result(err, null);
+        result(null, res);
+    })
+ }
 
  exports.fetch = function(query, params, result) {
      Fetch.query(query, params, function(err, res) {

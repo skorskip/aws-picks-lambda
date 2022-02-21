@@ -22,23 +22,31 @@ Pick.getCurrentPicks = function getCurrentPicks(token, result) {
 }
 
 Pick.addPicks = function addPicks(userId, picks, token, result) {
-    shared.policySubmitPicks(userId, picks, function(policyErr, policyRes) {
-        if(policyErr) {
-            console.error(policyErr);
-            return result(policyErr, null);
+    shared.game(picks.map(pick => pick.game_id), function(gamesErr, games) {
+
+        if(gamesErr) {
+            console.error(gamesErr);
+            return result(gamesErr, null);
         }
 
-        Pick.addPicksSQL(picks, function(addErr, addRes) {
-            if(addErr) {
-                console.error(addErr);
-                return result(addErr, null);
+        shared.policySubmitPicks(userId, games, function(policyErr, policyRes) {
+            if(policyErr) {
+                console.error(policyErr);
+                return result(policyErr, null);
             }
-            Pick.getCurrentPicks(token, function(currentErr, currentRes) {
-                if(currentErr) {
-                    console.error(currentErr);
-                    return result(currentErr, null);
+    
+            Pick.addPicksSQL(picks, function(addErr, addRes) {
+                if(addErr) {
+                    console.error(addErr);
+                    return result(addErr, null);
                 }
-                return result(null, currentRes);
+                Pick.getCurrentPicks(token, function(currentErr, currentRes) {
+                    if(currentErr) {
+                        console.error(currentErr);
+                        return result(currentErr, null);
+                    }
+                    return result(null, currentRes);
+                });
             });
         });
     });
