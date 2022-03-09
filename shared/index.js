@@ -10,65 +10,47 @@ var UserPicksByWeek = require('./picks/userPicksByWeek');
 var Fetch = require('./db/fetch');
 var Slack = require('./slack/slackProfile');
 
-exports.league = function(result) {
-    League.leagueSettings(function(err, res) {
-        if(err) return result(err, null);
-        result(null, res);
-    });
+exports.league = async function() {
+    var res = await League.leagueSettings();
+    return res;
 };
 
-exports.team  = function(teamIds, result) {
-    Team.getTeamsById(teamIds, function(err, res) {
-        if(err) return result(err, null);
-        result(null, res);
-    });
+exports.team  = async function(teamIds) {
+    var res = await Team.getTeamsById(teamIds);
+    return res;
  };
  
- exports.game = function(gameIds, result) {
-     Game.getGamesById(gameIds, function(err, res) {
-         if(err) return result(err, null);
-         result(null, res);
-     });
+ exports.game = async function(gameIds) {
+     var res = await Game.getGamesById(gameIds);
+    return res;
  };
 
- exports.policySubmitPicks = function(userId, picks, result) {
-     PolicySubmitPicks.policy(userId, picks, function(err, res) {
-        if(err) return result(err, null);
-        result(null, res);
-     });
+ exports.policySubmitPicks = async function(userId, picks) {
+     var res = PolicySubmitPicks.policy(userId, picks);
+     return res;
  };
 
- exports.policyEditPicks = function(picks, result) {
-     PolicyEditPicks.policy(picks, function(err, res) {
-         if(err) return result(err, res);
-         result(null, res);
-     });
+ exports.policyEditPicks = async function(picks) {
+    var res = await PolicyEditPicks.policy(picks);
+    return res;
  };
 
- exports.picksByWeek = function(season, seasonType, week, token, result) {
-    PicksByWeek.getPicksByWeek(season, seasonType, week, token, function(err, res) {
-        if(err) return result(err, null);
-        result(null, res);
-    });
+ exports.picksByWeek = async function(season, seasonType, week, token) {
+    var res = PicksByWeek.getPicksByWeek(season, seasonType, week, token);
+    return res;
  };
 
- exports.userPicksByWeek = function(season, seasonType, week, result) {
-     UserPicksByWeek.getUserPicksByWeek(season, seasonType, week, function(err, res) {
-         if(err) return result(err, null);
-         result(null, res);
-     });
+ exports.userPicksByWeek = async function(season, seasonType, week) {
+     var res = await UserPicksByWeek.getUserPicksByWeek(season, seasonType, week);
+     return res;
  };
 
- exports.slackProfile = function(userId, result) {
-    Slack.slackProfile(userId, function(err, res) {
-        if(err) return result(err, null);
-        result(null, res);
-    })
+ exports.slackProfile = async function(userId) {
+    var res = await Slack.slackProfile(userId);
+    return res;
  }
 
- exports.fetch = function(query, params, result) {
-     Fetch.query(query, params, function(err, res) {
-         if(err) return result(err, null);
-         result(null, res);
-     })
+ exports.fetch = async function(query, params) {
+     var res = await Fetch.query(query, params);
+     return res;
  }

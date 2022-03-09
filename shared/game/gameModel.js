@@ -1,7 +1,7 @@
 'user strict';
 var fetch = require('../db/fetch');
 
-const query = "Select * from games where game_id in (?) ORDER BY start_time";
+const query = 'SELECT * FROM games WHERE game_id in (?) ORDER BY start_time';
 
 var Game = function(game){
     this.game_id                    = game.game_id;
@@ -23,14 +23,12 @@ var Game = function(game){
     this.seconds_left_in_quarter    = game.seconds_left_in_quarter;
 };
 
-Game.getGamesById = function getGamesById(listGameIds, result) {
+Game.getGamesById = async function getGamesById(listGameIds) {
     if(listGameIds.length > 0) {
-        fetch.query(query, [listGameIds], function (err, res) {
-            if(err) result(err, null);
-            result(null, res);
-        });
+        var result = await fetch.query(query, [listGameIds]);
+        return result;
     } else {
-        result(null, []);
+        return [];
     }
 };
 

@@ -12,15 +12,15 @@ var statusEnum = {
 
 var PolicyEditPicks = function(){};
 
-PolicyEditPicks.policy = function policy (picks, result) {
+PolicyEditPicks.policy = function policy (picks) {
     if(picks.length === 0) {
-        result({status: statusEnum.ERROR, message: messageEnum.NO_PICKS}, null);
+        throw {status: statusEnum.ERROR, message: messageEnum.NO_PICKS};
     }
 
     if(picks.find((pick) => new Date(pick.pick_submit_by_date) < new Date())) {
-        result({status: statusEnum.ERROR, message: messageEnum.PASS_SUBMIT_DATE}, null);
+        throw {status: statusEnum.ERROR, message: messageEnum.PASS_SUBMIT_DATE};
     } else {
-        result(null, {status: statusEnum.SUCCESS})
+        return {status: statusEnum.SUCCESS};
     }
 }
 

@@ -21,11 +21,9 @@ var UserPicksByWeek = function(userPicksByWeek){
     this.pick_submit_by_date    = userPicksByWeek.pick_submit_by_date;     
 };
 
-UserPicksByWeek.getUserPicksByWeek = function getWeekPicksByGame(season, seasonType, week, result) {
-    fetch.query(query,[week, season, seasonType, new Date()], function(err, res) {
-        if(err) result(err, null);
-        result(null, res);
-    });
+UserPicksByWeek.getUserPicksByWeek = async function getWeekPicksByGame(season, seasonType, week) {
+    let res = await fetch.query(query,[week, season, seasonType, new Date()]);
+    return res;
 }
 
 module.exports = UserPicksByWeek;

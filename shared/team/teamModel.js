@@ -12,16 +12,13 @@ var Team = function(team){
     this.display_color      = team.display_color;
 };
 
-Team.getTeamsById = function getTeamsById(teamIds, result) {
+Team.getTeamsById = async function getTeamsById(teamIds) {
 
     if(teamIds.length > 0) {
-        fetch.query(query, [teamIds], function(err, res){
-            if(err) result(err, null);
-            result(null, res);
-        });
+        let res = await fetch.query(query, [teamIds]);
+        return res;
     } else {
-        console.log("[]");
-        result(null, []);
+        return [];
     }
 }
 

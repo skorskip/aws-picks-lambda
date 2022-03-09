@@ -19,27 +19,14 @@ var PicksUser = function(game, homeTeam, awayTeam, pick, winning_team_id, game_s
     this.pick_submit_by_date = pick_submit_by_date;
 }
 
-PicksUser.getUsersPicksByWeek = function getUsersPicksByWeek(userId, season, week, seasonType, result) {
-    shared.fetch(queries.GET_USER_PICKS_BY_WEEK, 
-        [season, week, seasonType, userId, new Date()],
-        function(err, data) {
-            if(err) {
-                console.error(err);
-                result(err, null);
-            }
-
-            PicksUser.picksObjectMapper(data, function(mappErr, picksList){
-                if(mappErr){
-                    console.error(mappErr); 
-                    result(mapErr, null)
-                }
-                let picksUserObject = PicksUser.pickUserMapper(picksList);
-                result(null, picksUserObject);
-            });
-        });
+PicksUser.getUsersPicksByWeek = async function getUsersPicksByWeek(userId, season, week, seasonType) {
+    var data = await shared.fetch(queries.GET_USER_PICKS_BY_WEEK, 
+        [season, week, seasonType, userId, new Date()]);
+    var picksList = await PicksUser.picksObjectMapper(data);
+    return PicksUser.pickUserMapper(picksList);
 }
 
-PicksUser.picksObjectMapper = function picksObjectMapper(picks, result) {
+PicksUser.picksObjectMapper = async function picksObjectMapper(picks) {
 
     var teams = [];
     var games  = [];
@@ -50,24 +37,15 @@ PicksUser.picksObjectMapper = function picksObjectMapper(picks, result) {
         teams.push(pick.home_team_id);
     });
 
+    var teamObjects = await shared.team(teams); 
+    var gameObjects = await shared.game(games);
+
     var pickObject = {};
     pickObject.picks = picks;
-    pickObject.teams = [];
-    pickObject.games = [];
+    pickObject.teams = teamObjects;
+    pickObject.games = gameObjects;
 
-    shared.team(teams, function(err, teamObjects){
-        if(err){
-            result(err, null)
-        }
-        pickObject.teams = teamObjects;
-        shared.game(games, function(err, gameObjects){
-            if(err){
-                result(err, null)
-            }
-            pickObject.games = gameObjects;
-            result(null, pickObject)
-        });
-    });    
+    return pickObject;
 }
 
 PicksUser.pickUserMapper = function pickUserMapper(pickUsers) {

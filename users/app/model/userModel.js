@@ -36,152 +36,80 @@ var StatusEnum = {
     COGNITO_USER : "cognito:username"
 }
 
-User.updateUser = function updateUser(userId, user, result) {
-    shared.fetch(queries.UPDATE_USER, [
+User.updateUser = async function updateUser(userId, user) {
+    var res = shared.fetch(queries.UPDATE_USER, [
         user.user_name,
         user.first_name,
         user.last_name,
         user.email,
         user.password, 
-        userId], function(err, res){
-        if(err) {
-            console.error(StatusEnum.FAILURE);
-            return result(StatusEnum.FAILURE, null);
-        }
-        else {
-            if(res.affectedRows == 1) {
-                console.log(StatusEnum.SUCCESS);
-                return result(null, StatusEnum.SUCCESS);
-            } else {
-                console.error(StatusEnum.FAILURE);
-                return result(StatusEnum.FAILURE, null);
-            }
-        }
-    });
+        userId]);
+
+    if(res.affectedRows == 1) {
+        return StatusEnum.SUCCESS;
+    } else {
+        throw StatusEnum.FAILURE;
+    }
 };
 
-User.deleteUser = function deleteUser(userId, result) {
-    shared.fetch(queries.DELETE_USER, userId, function(err, res) {
-        if(err) {
-            console.error(err);
-            return result(err, null);
-        }
-        else {
-            console.log(res);
-            return result(null, res);
-        }
-    });
+User.deleteUser = async function deleteUser(userId) {
+    var res = await shared.fetch(queries.DELETE_USER, userId);
+    return res;
 };
 
-User.createUser = function createUser(user, result) {
-    shared.fetch(queries.CREATE_USER, user, function(err, res) {
-        if(err) {
-            console.error(StatusEnum.FAILURE);
-            return result(null, StatusEnum.FAILURE);
-        }
-        else {
-            console.log(StatusEnum.SUCCESS);
-            return result(null, StatusEnum.SUCCESS);
-        }
-    });
+User.createUser = async function createUser(user) {
+    await shared.fetch(queries.CREATE_USER, user);
+    return StatusEnum.SUCCESS
 };
 
-User.login = function login(token, result) {
-    var userToken = jwtDecode(token);
-    var username = userToken[StatusEnum.COGNITO_USER]
-    shared.fetch(queries.LOGIN_USER, [username.toLowerCase()], function(err, res) {
-        if(err) {
-            console.error(err);
-            return result(err, null);
-        }
-
-        if(res.length === 0) {
-            return result(StatusEnum.UNAUTHORIZED, null);
-        }
-
-        User.getUserDetailsView(res[0].user_id, function(detailsErr, details) {
-            if(detailsErr) console.error(detailsErr, null);
-            return result(null, new User(res[0],details[0]));
-        });
-    });
-};
-
-User.getAllUsers = function getAllUsers(season, seasonType, week, result) {
-    var allUsers = new Promise((resolve, reject) => { 
-        shared.fetch(queries.ALL_USERS, [], function(err, res) {
-            if(err) reject(err);
-            resolve(res);
-        });
-    });
-
-    var details = new Promise((resolve, reject) => {
-        User.getUserDetailsStorProc(season, seasonType, week, function(err, res) {
-            if(err) reject(err);
-            resolve(res);
-        })
-    });
-
-    Promise.all([allUsers, details]).then((values) => {
-        var fullUsers = [];
-        values[0].forEach(user => {
-          var userDetail = values[1][0].find(detail => detail.user_id == user.user_id);
-          fullUsers.push(new User(user, userDetail));  
-        });
-        return result(null, fullUsers);
-    }).catch(error => {
-        console.error(error);
-        return result(error, null);
-    })
-};
-
-User.updateView = function updateView(season, seasonType, week, result) {
-    shared.fetch(queries.UPDATE_STAT_VIEW, [season, seasonType, week], function(err, res){
-        if(err) return result(err, null);
-        return result(null, res);
-    });
-};
-
-User.getUserDetailsView = function getUserDetails(userId, result) {
-    shared.fetch(queries.USER_DETAILS,[userId, userId], function(err, res) {
-        if(err) return result(err, null);
-        return result(null, res);
-    });
-}
-
-User.getUserDetailsStorProc = function getUserDetailsStorProc(season, seasonType, week, result) {
-    shared.fetch(queries.USER_STANDINGS, [season, seasonType, week], function(err, res) {
-        if(err) return result(err, null);
-        return result(null, res);
-    })
-}
-
-User.updateUserImage = function updateUserImage(token, result) {
+User.login = async function login(token) {
     var userToken = jwtDecode(token);
     var username = userToken[StatusEnum.COGNITO_USER];
 
-    shared.fetch(queries.LOGIN_USER, [username.toLowerCase()], function(getUserErr, users) {
-        if(getUserErr) {
-            console.error(getUserErr);
-            return result(getUserErr, null);
-        }
+    var users = await shared.fetch(queries.LOGIN_USER, [username.toLowerCase()]);
 
-        var user = users[0]
+    if(users.length === 0) return StatusEnum.UNAUTHORIZED;
+
+    var details = await User.getUserDetailsView(users[0].user_id);
+    return new User(users[0], details[0]);
+};
+
+User.getAllUsers = async function getAllUsers(season, seasonType, week) {
+    var allUsers = await shared.fetch(queries.ALL_USERS, []);
+    var details = await User.getUserDetailsStorProc(season, seasonType, week);
+    var fullUsers = [];
     
-        shared.slackProfile(user.slack_user_id, function(getSlackErr, slackProfile) {
-            if(getSlackErr) {
-                console.error(getSlackErr);
-                return result(getSlackErr, null);
-            }
-
-            shared.fetch(queries.USER_UPDATE_IMG, [slackProfile.imageURL, user.user_id], function(updateErr, updateRes) {
-                if(updateErr) {
-                    console.error(updateErr);
-                    return result(updateErr, null);
-                }
-                return result(null, StatusEnum.SUCCESS);
-            });
-        });
+    allUsers.forEach(user => {
+        var userDetail = details[0].find(detail => detail.user_id == user.user_id);
+        fullUsers.push(new User(user, userDetail));  
     });
+    
+    return fullUsers;
+};
+
+User.updateView = async function updateView(season, seasonType, week) {
+    var res = await shared.fetch(queries.UPDATE_STAT_VIEW, [season, seasonType, week]);
+    return res;
+};
+
+User.getUserDetailsView = async function getUserDetails(userId) {
+    var res = await shared.fetch(queries.USER_DETAILS,[userId, userId]);
+    return res;
+}
+
+User.getUserDetailsStorProc = async function getUserDetailsStorProc(season, seasonType, week) {
+    var res = await shared.fetch(queries.USER_STANDINGS, [season, seasonType, week]);
+    return res;
+}
+
+User.updateUserImage = async function updateUserImage(token) {
+    var userToken = jwtDecode(token);
+    var username = userToken[StatusEnum.COGNITO_USER];
+
+    var users = await shared.fetch(queries.LOGIN_USER, [username.toLowerCase()]);
+    var slackProfile = await shared.slackProfile(users[0].slack_user_id);
+    await shared.fetch(queries.USER_UPDATE_IMG, [slackProfile.imageURL, users[0].user_id]);
+    return StatusEnum.SUCCESS;
 }
 
 module.exports = User;

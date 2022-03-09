@@ -2,9 +2,7 @@
 
 var League = require('../model/leagueModel.js');
 
-exports.leagueSettings = function(req, res) {
-    League.leagueSettings(function(err, settings){
-        if(err) return res.status(500).send({error: true, message: "Error retrieving league settings", content: err});
-        res.json(settings);
-    });
+exports.leagueSettings = async function(req, res) {
+    var settings = await League.leagueSettings();
+    res.json(settings);
 };
