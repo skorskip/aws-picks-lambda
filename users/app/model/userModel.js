@@ -1,240 +1,187 @@
 'use strict';
-var mysql = require('mysql');
-var config = require('./db');
 var jwtDecode = require('jwt-decode');
+var queries = require('../utils/queries');
+var shared = require('picks-app-shared');
 
-var User = function(user) {
-    this.user_name = user.user_name;
-    this.first_name = user.first_name;
-    this.last_name = user.last_name;
-    this.user_init = user.user_init;
-    this.password = user.password;
-    this.email = user.email;
+var CurrentSeasonData = function(currSeasonData) {
+    this.max_picks      = currSeasonData.max_picks == null ? 0 : currSeasonData.max_picks;
+    this.picks_penalty  = currSeasonData.picks_penalty == null ? 0 : currSeasonData.picks_penalty;
+    this.pending_picks  = currSeasonData.pending_picks == null ? 0 : currSeasonData.pending_picks;
+    this.picks          = currSeasonData.picks == null ? 0 : currSeasonData.picks;
+    this.ranking        = currSeasonData.ranking == null ? 0 : currSeasonData.ranking;
+    this.wins           = currSeasonData.wins == null ? 0 : currSeasonData.wins;
+    this.win_pct        = currSeasonData.win_pct == null ? 0 : currSeasonData.win_pct;
+    this.prev_ranking   = currSeasonData.prev_ranking == null ? 0 : currSeasonData.prev_ranking;
+    this.bonus_nbr      = currSeasonData.bonus_nbr == null ? 0 : currSeasonData.bonus_nbr;
+}
+
+var User = function(userInfo, userCurrSeasonData) {
+    this.user_id = userInfo.user_id;
+    this.user_name = userInfo.user_name;
+    this.first_name = userInfo.first_name;
+    this.last_name = userInfo.last_name;
+    this.user_inits = userInfo.user_inits;
+    this.email = userInfo.email;
+    this.status = userInfo.status;
+    this.type = userInfo.type;
+    this.slack_user_id = userInfo.slack_user_id;
+    this.slack_user_image = userInfo.slack_user_image;
+    this.current_season_data = userCurrSeasonData == null ? null : new CurrentSeasonData(userCurrSeasonData);
+}
+
+var StatusEnum = {
+    FAILURE : "FAILURE",
+    SUCCESS : "SUCCESS",
+    UNAUTHORIZED : "UNAUTHORIZED",
+    COGNITO_USER : "cognito:username"
 }
 
 User.updateUser = function updateUser(userId, user, result) {
-    var sql = mysql.createConnection(config);
-
-    sql.connect(function(connectErr){
-        if (connectErr) {
-            console.error(connectErr);
-            result(connectErr, null);
+    shared.fetch(queries.UPDATE_USER, [
+        user.user_name,
+        user.first_name,
+        user.last_name,
+        user.email,
+        user.password, 
+        userId], function(err, res){
+        if(err) {
+            console.error(StatusEnum.FAILURE);
+            return result(StatusEnum.FAILURE, null);
         }
-        sql.query('UPDATE users SET ' +
-        'user_name = ?, ' + 
-        'first_name = ?, ' +
-        'last_name = ?, ' +
-        'email = ?, ' +
-        'password = sha2(concat(password_salt,?),256) ' +
-        'WHERE user_id = ?', [
-            user.user_name,
-            user.first_name,
-            user.last_name,
-            user.email,
-            user.password, 
-            userId], function(err, res){
-            
-            sql.destroy();
-            if(err) {
-                console.error("FAILURE");
-                result(null, 'FAILURE');
+        else {
+            if(res.affectedRows == 1) {
+                console.log(StatusEnum.SUCCESS);
+                return result(null, StatusEnum.SUCCESS);
+            } else {
+                console.error(StatusEnum.FAILURE);
+                return result(StatusEnum.FAILURE, null);
             }
-            else {
-                if(res.affectedRows == 1) {
-                    console.log("SUCCESS");
-                    result(null, 'SUCCESS');
-                } else {
-                    console.log("SUCCESS");
-                    result(null, 'FAILURE')
-                }
-            }
-        });
+        }
     });
 };
 
 User.deleteUser = function deleteUser(userId, result) {
-    var sql = mysql.createConnection(config);
-
-    sql.connect(function(connectErr){
-        if (connectErr) {
-            console.error(connectErr);
-            result(connectErr, null);
+    shared.fetch(queries.DELETE_USER, userId, function(err, res) {
+        if(err) {
+            console.error(err);
+            return result(err, null);
         }
-        sql.query('DELETE FROM users WHERE user_id = ?', userId, function(err, res) {
-            sql.destroy();
-            if(err) {
-                console.error(err);
-                result(err, null);
-            }
-            else {
-                console.log(res);
-                result(null, res);
-            }
-        });
+        else {
+            console.log(res);
+            return result(null, res);
+        }
     });
 };
 
 User.createUser = function createUser(user, result) {
-    var sql = mysql.createConnection(config);
-
-    sql.connect(function(connectErr){
-        if (connectErr) {
-            console.error(connectErr);
-            result(connectErr, null);
+    shared.fetch(queries.CREATE_USER, user, function(err, res) {
+        if(err) {
+            console.error(StatusEnum.FAILURE);
+            return result(null, StatusEnum.FAILURE);
         }
-        sql.query('INSERT INTO users SET ?', user, function(err, res) {
-            sql.destroy();
-            if(err) {
-                console.error('FAILURE');
-                result(null, 'FAILURE');
-            }
-            else {
-                console.log("SUCCESS");
-                result(null, 'SUCCESS');
-            }
-        });
-    });
-
-};
-
-User.login = function login(userPass, token, result) {
-    var userToken = jwtDecode(token)
-    if(userToken['email'].toLowerCase() === userPass.user_name.toLowerCase() || 
-        userToken['cognito:username'].toLowerCase() === userPass.user_name.toLowerCase()) {
-        var sql = mysql.createConnection(config);
-
-        sql.connect(function(connectErr){
-            if (connectErr) {
-                console.error(connectErr);
-                result(connectErr, null);
-            }
-            sql.query('SELECT * ' +
-            'FROM users ' +
-            'WHERE (LOWER(user_name) = ? OR email = ?)',
-            [userPass.user_name.toLowerCase(), userPass.user_name, userPass.password], function(err, res) {
-                sql.destroy();
-                if(err) {
-                    console.error(err);
-                    result(err, null);
-                }
-                else {
-                    console.log(res);
-                    result(null,res);
-                }
-            });
-        });
-    } else {
-        result("Unauthorized", null);
-    }
-};
-
-User.standings = function standings(season, seasonType, week, result) {
-    var sql = mysql.createConnection(config);
-
-    sql.connect(function(connectErr){
-        if (connectErr) {
-            console.error(connectErr);
-            result(connectErr, null);
+        else {
+            console.log(StatusEnum.SUCCESS);
+            return result(null, StatusEnum.SUCCESS);
         }
-        sql.query(
-            'CALL get_user_standings(?,?,?)', [season, seasonType, week], function(err, res) {
-                sql.destroy();
-                if(err) {
-                    console.error(err);
-                    result(err, null);
-                }
-                else {
-                    console.log(res);
-                    result(null, res[0]);
-                }
-            });
     });
 };
 
-User.standingsByUser = function standingsByUser(season, seasonType, week, user, result) {
-    User.updateView(season, seasonType, week, function(errUpdate, resUpdate) {
-
-        if(errUpdate) {
-            console.log(errUpdate);
-            result(errUpdate, null);
+User.login = function login(token, result) {
+    var userToken = jwtDecode(token);
+    var username = userToken[StatusEnum.COGNITO_USER]
+    shared.fetch(queries.LOGIN_USER, [username.toLowerCase()], function(err, res) {
+        if(err) {
+            console.error(err);
+            return result(err, null);
         }
 
-        var sql = mysql.createConnection(config);
+        if(res.length === 0) {
+            return result(StatusEnum.UNAUTHORIZED, null);
+        }
 
-        sql.connect(function(connectErr){
-            if (connectErr) {
-                console.error(connectErr);
-                result(connectErr, null);
-            }
-            sql.query(
-                'SELECT * ' +
-                'FROM rpt_user_stats ' +
-                'WHERE season = ? ' +
-                'AND season_type = ? ' +
-                'AND user_id = ?', [season, seasonType, user.user_id], function(err, res) {
-                    sql.destroy();
-                    if(err) {
-                        console.error(err);
-                        result(err, null);
-                    }
-                    else {
-                        console.log(res);
-                        result(null, res);
-                    }
-                });
+        User.getUserDetailsView(res[0].user_id, function(detailsErr, details) {
+            if(detailsErr) console.error(detailsErr, null);
+            return result(null, new User(res[0],details[0]));
         });
+    });
+};
+
+User.getAllUsers = function getAllUsers(season, seasonType, week, result) {
+    var allUsers = new Promise((resolve, reject) => { 
+        shared.fetch(queries.ALL_USERS, [], function(err, res) {
+            if(err) reject(err);
+            resolve(res);
+        });
+    });
+
+    var details = new Promise((resolve, reject) => {
+        User.getUserDetailsStorProc(season, seasonType, week, function(err, res) {
+            if(err) reject(err);
+            resolve(res);
+        })
+    });
+
+    Promise.all([allUsers, details]).then((values) => {
+        var fullUsers = [];
+        values[0].forEach(user => {
+          var userDetail = values[1][0].find(detail => detail.user_id == user.user_id);
+          fullUsers.push(new User(user, userDetail));  
+        });
+        return result(null, fullUsers);
+    }).catch(error => {
+        console.error(error);
+        return result(error, null);
     })
 };
 
 User.updateView = function updateView(season, seasonType, week, result) {
-    var sql = mysql.createConnection(config);
+    shared.fetch(queries.UPDATE_STAT_VIEW, [season, seasonType, week], function(err, res){
+        if(err) return result(err, null);
+        return result(null, res);
+    });
+};
 
-    sql.connect(function(connectErr) {
-        if(connectErr) {
-            console.error(connectErr);
-            result(err, null);
+User.getUserDetailsView = function getUserDetails(userId, result) {
+    shared.fetch(queries.USER_DETAILS,[userId, userId], function(err, res) {
+        if(err) return result(err, null);
+        return result(null, res);
+    });
+}
+
+User.getUserDetailsStorProc = function getUserDetailsStorProc(season, seasonType, week, result) {
+    shared.fetch(queries.USER_STANDINGS, [season, seasonType, week], function(err, res) {
+        if(err) return result(err, null);
+        return result(null, res);
+    })
+}
+
+User.updateUserImage = function updateUserImage(token, result) {
+    var userToken = jwtDecode(token);
+    var username = userToken[StatusEnum.COGNITO_USER];
+
+    shared.fetch(queries.LOGIN_USER, [username.toLowerCase()], function(getUserErr, users) {
+        if(getUserErr) {
+            console.error(getUserErr);
+            return result(getUserErr, null);
         }
-        sql.query('CALL update_weekly_user_stats(?, ?, ?)', [season, seasonType, week], function(err, res){
-            sql.destroy();
-            if(err) {
-                console.error(err);
-                result(err, null);
+
+        var user = users[0]
+    
+        shared.slackProfile(user.slack_user_id, function(getSlackErr, slackProfile) {
+            if(getSlackErr) {
+                console.error(getSlackErr);
+                return result(getSlackErr, null);
             }
-            else {
-                console.log(res);
-                result(null, res);
-            }
+
+            shared.fetch(queries.USER_UPDATE_IMG, [slackProfile.imageURL, user.user_id], function(updateErr, updateRes) {
+                if(updateErr) {
+                    console.error(updateErr);
+                    return result(updateErr, null);
+                }
+                return result(null, StatusEnum.SUCCESS);
+            });
         });
     });
-};
-
-User.getUserPicksLimit = function getUserPicksLimit(season, seasonType, userId, result) {
-
-    var sql  = mysql.createConnection(config);
-
-    sql.connect(function(connectErr) {
-        if(connectErr) {
-            console.error(connectErr);
-            result(err, null);
-        }
-        sql.query('SELECT user_id, user_type, max_picks, picks_penalty ' +
-            'FROM season_users ' + 
-            'WHERE season = ? ' +
-            'AND season_type = ? ' +
-            'AND user_id = ?',
-            [season, seasonType, userId],
-            function(err, res) {
-                sql.destroy();
-                if(err) {
-                    console.error(err);
-                    result(err, null);
-                } else {
-                    console.log(res);
-                    result(null, res);
-                }
-            }
-        )
-    });
-};
+}
 
 module.exports = User;

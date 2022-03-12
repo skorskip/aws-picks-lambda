@@ -1,100 +1,67 @@
 'user strict'
-var Team = require('./teamModel.js');
-var League = require('./leagueModel');
-var mysql = require('mysql');
-var config = require('./db');
+var shared = require('picks-app-shared');
+var queries = require('../utils/queries');
 
-var Week = function(week){
-    this.number = week.number;
-    this.games = week.games;
-    this.season = week.season;
-    this.teams = week.teams;
+var Week = function(season, week, seasonType, games, picks, teams, userPicks){
+    this.number = week;
+    this.games = games;
+    this.season = season;
+    this.seasonType = seasonType;
+    this.teams = teams;
+    this.picks = picks;
+    this.userPicks = userPicks
 };
 
-Week.getWeek = function getWeek(season, week, seasonType, user, result){
-    var getWeekSQL = new Promise((resolve, reject) => {
-        Week.getWeekSQL(season, week, seasonType, user, function(err, data){
+Week.getWeek = function getWeek(season, week, seasonType, token, result){
+
+    var games = new Promise((resolve, reject) => {
+        Week.getWeekSQL(season, week, seasonType, function(err, games){
             if(err) reject(err);  
-            resolve(data);
+            resolve(games);
         });
     });
 
-    getWeekSQL.then(function(data, err) {
-        if(err) {
-            console.log(err);
-            result(err, null);
-        }
-        Week.weekMapper(data, season, week, seasonType, function(errMapping, weekObject){
+    var picks = new Promise((resolve, reject) => {
+        shared.picksByWeek(season, seasonType, week, token, function(picksByWeekErr, pickByWeek) {
+            if(picksByWeekErr) reject(picksByWeekErr);
+            resolve(pickByWeek);        
+        });
+    });
+
+    var userPicks = new Promise((resolve, reject) => {
+        shared.userPicksByWeek(season, seasonType, week, function(userPicksByWeekErr, userPicksByWeek) {
+            if(userPicksByWeekErr) reject(userPicksByWeekErr);
+            resolve(userPicksByWeek);
+        });
+    });
+
+    Promise.all([games, picks, userPicks]).then((values) => {
+        Week.weekMapper(values[0], values[1], values[2], season, week, seasonType, function(errMapping, weekObject){
             if(errMapping) {
-                console.log(errMapping);
-                result(errMapping, null);
+                console.error(errMapping);
+                return result(errMapping, null);
             }
             console.log(weekObject);
-            result(null, weekObject);
+            return result(null, weekObject);
         });
+    }).catch(error => {
+        console.error(error);
+        return result(error, null);
     });
 }
 
-Week.getCurrentWeek = function getCurrentWeek(req, result) {
-    League.leagueSettings(function(err,settings){
-        if(err) {
-            console.log(err);
-            result(err, null);
-        }
-                
-        var currWeekObj = {};
-        currWeekObj.season = settings.currentSeason;
-        currWeekObj.week = settings.currentWeek;
-        currWeekObj.seasonType = settings.currentSeasonType;
-    
-        console.log(currWeekObj);
-        result(null, currWeekObj);
-    });
-}
-
-Week.getWeekSQL = function getWeekSQL(season, week, seasonType, user, result) {
-    var sql = mysql.createConnection(config);
-
-    sql.connect(function(err){
+Week.getWeekSQL = function getWeekSQL(season, week, seasonType, result) {
+    shared.fetch(queries.ALL_GAMES_BY_WEEK, [season, week, seasonType], function(err, data){
         if(err) { 
-            console.log(err);
-            result(err, null);
-        } 
-
-        sql.query(
-            "SELECT * FROM games " +
-            "WHERE season = ? " + 
-            "AND week = ? " + 
-            "AND season_type = ? " +
-            "AND home_spread is not NULL " +
-            "ORDER BY start_time", [
-                season, 
-                week, 
-                seasonType, 
-                season, 
-                week, 
-                seasonType
-            ], function(err, data){
-            sql.destroy();
-            if(err) { 
-                console.log(err);
-                result(err, null);
-            } else {
-                console.log(data);
-                result(null, data);
-            }
-        });
+            console.error(err);
+            return result(err, null);
+        } else {
+            return result(null, data);
+        }
     });
-    
 };
 
-Week.weekMapper = function(games, season, week, seasonType, result) {
-    var weekObject = {};
-    weekObject.games = games;
-    weekObject.number = week;
-    weekObject.season = season;
-    weekObject.seasonType = seasonType;
-    
+Week.weekMapper = function(games, picks, userPicks, season, week, seasonType, result) {
     var teams = [];
     if(games.length > 0) {
         games.forEach(game => {
@@ -103,10 +70,10 @@ Week.weekMapper = function(games, season, week, seasonType, result) {
         });
     }
 
-    Team.getTeamsById(teams, function(err, teams){
-        if(err) result(err, null);
-        weekObject.teams = teams;
-        result(null, weekObject);
+    shared.team(teams, function(err, teams){
+        if(err) return result(err, null);
+        var response = new Week(season, week, seasonType, games, picks, teams, userPicks);
+        return result(null, response);
     });
 };
 

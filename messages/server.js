@@ -16,6 +16,7 @@ app.use(bodyParser.json());
 app.post('/announcements', (req, res) => message.announcements(req, res));
 app.get('/chat-thread', (req, res) => message.chatThread(req, res));
 app.post('/active-thread', (req, res) => message.activeThread(req, res));
+app.post('/set-reminder', (req, res) => message.setReminder(req, res));
 
 if(process.env.NODE_ENV === 'local') {
     app.listen(3001, () => console.log('Ready'));

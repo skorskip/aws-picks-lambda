@@ -10,13 +10,13 @@
   "keywords": [],
   "description": "",
   "dependencies": {
-    "aws-serverless-express": "^3.3.8",
-    "body-parser": "^1.18.3",
+    "aws-serverless-express": "^3.4.0",
+    "body-parser": "^1.19.2",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "jwt-decode": "^3.1.2",
-    "mysql": "^2.16.0",
-    "request": "^2.88.0"
+    "picks-app-shared": "^2.10.3",
+    "request": "^2.88.2"
   }
 }

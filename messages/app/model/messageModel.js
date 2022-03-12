@@ -1,14 +1,14 @@
 'use strict'
-var League = require('./leagueModel');
 const { WebClient } = require('@slack/web-api');
+var shared = require('picks-app-shared');
 
 var Message = function(){}
 
 Message.announcements = function announcements(body, result){
-    League.leagueSettings(function(err, settings){
+    shared.league(function(err, settings){
         if(err) {
             console.error(err);
-            result(err, null);
+            return result(err, null);
         }
 
         const token = settings.messageSource.token;
@@ -57,16 +57,16 @@ Message.announcements = function announcements(body, result){
     
             responseObject.announcement_date = new Date(lastestTs * 1000);
             console.log(responseObject);
-            result(null, responseObject);
+            return result(null, responseObject);
         })();
     });
 }
 
 Message.activeThread = function activeThread(body, result) {
-    League.leagueSettings(function(err, settings){
+    shared.league(function(err, settings){
         if(err) {
             console.error(err);
-            result(err, null);
+            return result(err, null);
         }
 
         const token = settings.messageSource.token;
@@ -87,17 +87,17 @@ Message.activeThread = function activeThread(body, result) {
                 oldest: checkDate.getTime() / 1000
             });
             console.log(response.messages.length > 0);
-            result(null, response.messages.length > 0);
+            return result(null, response.messages.length > 0);
             
         })();
     });
 }
 
 Message.chatThread = function chatThread(result){
-    League.leagueSettings(function(err, settings){
+    shared.league(function(err, settings){
         if(err) {
             console.error(err);
-            result(err, null);
+            return result(err, null);
         }
 
         const token = settings.messageSource.token;
@@ -111,12 +111,12 @@ Message.chatThread = function chatThread(result){
                 });
             } catch(e) {
                 console.error(e);
-                result(e, null);
+                return result(e, null);
             }
 
             if(threadStart.messages.length === 0) {
                 console.error("No thread start found.");
-                result("No thread start found.", null);
+                return result("No thread start found.", null);
             }
             var response = {}
             try {
@@ -126,11 +126,41 @@ Message.chatThread = function chatThread(result){
                 });
             } catch(e) {
                 console.error(e);
-                result(e, null);
+                return result(e, null);
             }
 
             console.log(response);
-            result(null, response);
+            return result(null, response);
+        })();
+    });
+}
+
+Message.setReminder = function setReminder(body, result) {
+    shared.league(function(err, settings) {
+        if(err) {
+            console.error(err);
+            return result(err, null);
+        }
+
+        const token = settings.messageSource.token;
+        const web = new WebClient(token);
+        (async () => {
+            try {
+                let minsBeforeSubmit = 15;
+                let submitDate = new Date(body.pick_submit_by_date);
+                let remindTime = new Date(submitDate.setMinutes(submitDate.getMinutes() - minsBeforeSubmit));
+
+                const response = await web.reminders.add({
+                    text: "Time to make your picks!",
+                    user: body.slack_user_id,
+                    time: (remindTime.getTime()/1000).toString(),
+                });
+
+                return result(null, {status: "SUCCESS", message: response});
+            } catch(e) {
+                console.error(e);
+                return result(err, null);
+            }
         })();
     });
 }
