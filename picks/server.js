@@ -30,6 +30,9 @@ app.post('/create/:userId', runAsyncWrapper(async (req, res) => picks.addPicks(r
 app.post('/delete', runAsyncWrapper(async (req, res) => picks.deletePicks(req,res)));
 app.post('/update', runAsyncWrapper(async (req, res) => picks.updatePicks(req, res)));
 
+// delete?user={user}&season={season}&seasonType={seasonType}&week={week}
+app.delete('/week/delete', runAsyncWrapper(async (req, res) => picks.deletePicksWeek(req, res)));
+
 if(process.env.NODE_ENV === 'local') {
     app.listen(3003, () => console.log('Ready'));
 }

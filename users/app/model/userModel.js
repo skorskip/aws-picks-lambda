@@ -13,6 +13,7 @@ var CurrentSeasonData = function(currSeasonData) {
     this.win_pct        = currSeasonData.win_pct == null ? 0 : currSeasonData.win_pct;
     this.prev_ranking   = currSeasonData.prev_ranking == null ? 0 : currSeasonData.prev_ranking;
     this.bonus_nbr      = currSeasonData.bonus_nbr == null ? 0 : currSeasonData.bonus_nbr;
+    this.dropped_week   = currSeasonData.dropped_week == null ? null : currSeasonData.dropped_week;
 }
 
 var User = function(userInfo, userCurrSeasonData) {

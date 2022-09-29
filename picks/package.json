@@ -16,7 +16,7 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.3",
     "jwt-decode": "^3.1.2",
-    "picks-app-shared": "^4.0.1",
+    "picks-app-shared": "^5.0.0",
     "request": "^2.88.2"
   }
 }

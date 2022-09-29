@@ -5,6 +5,7 @@ var Team = require('./team/teamModel');
 var Game = require('./game/gameModel');
 var PolicySubmitPicks = require('./policy/policySubmitPicks');
 var PolicyEditPicks = require('./policy/policyEditPicks');
+var PolicyDeleteWeek = require('./policy/policyDeleteWeek');
 var PicksByWeek = require('./picks/picksByWeek');
 var UserPicksByWeek = require('./picks/userPicksByWeek');
 var Fetch = require('./db/fetch');
@@ -24,6 +25,11 @@ exports.team  = async function(teamIds) {
      var res = await Game.getGamesById(gameIds);
     return res;
  };
+
+ exports.policyDeleteWeek = async function(userId, token) {
+    var res = await PolicyDeleteWeek.policy(userId, token);
+    return res;
+ }
 
  exports.policySubmitPicks = async function(userId, picks) {
      var res = PolicySubmitPicks.policy(userId, picks);

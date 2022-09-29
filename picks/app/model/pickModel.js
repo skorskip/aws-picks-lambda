@@ -3,6 +3,11 @@ var jwtDecode = require('jwt-decode');
 var shared = require('picks-app-shared');
 var queries = require('../utils/queries');
 
+var statusEnum = {
+    SUCCESS: 'SUCCESS',
+    ERROR: 'ERROR'
+}
+
 var Pick = function(pick) {
     this.game_id                = pick.game_id;
     this.team_id                = pick.team_id;
@@ -23,6 +28,12 @@ Pick.addPicks = async function addPicks(userId, picks, token) {
     await Pick.addPicksSQL(picks);
     return await Pick.getCurrentPicks(token);
 } 
+
+Pick.deletePicksWeek = async function deletePicksWeek(season, seasonType, week, userId, token) {
+    await shared.policyDeleteWeek(userId, token);
+    await shared.fetch(queries.DELETE_PICKS_WEEK, [userId, season, seasonType, week]);
+    return {status: statusEnum.SUCCESS};
+}
 
 Pick.addPicksSQL = async function addPicksSQL(picks) {
     let keys = ['pick_id','user_id','game_id','team_id', 'submitted_date'];
