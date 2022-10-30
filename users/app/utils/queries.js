@@ -19,7 +19,7 @@ var queries = {
     ALL_USERS : 'SELECT * ' + 
     'FROM users',
 
-    USER_DETAILS : 'SELECT s.max_picks, s.picks_penalty, r.pending_picks, r.picks,  r.ranking, r.wins, r.win_pct ' +
+    USER_DETAILS : 'SELECT s.max_picks, s.picks_penalty, r.pending_picks, r.picks,  r.ranking, r.wins, r.win_pct, s.dropped_week ' +
     'FROM season_users s, config c, rpt_user_stats r ' + 
     'WHERE c.status = \'active\' ' +   
     'AND s.season = JSON_VALUE(c.settings, \'$.currentSeason\') ' +

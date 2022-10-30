@@ -1,7 +1,9 @@
 'use strict'
 var fetch = require('../db/fetch');
+var jwtDecode = require('jwt-decode');
 
-const queryMulligan = 'SELECT u.id ' +
+var jwtDecode = require('jwt-decode');
+const queryMulligan = 'SELECT s.user_id ' +
 'FROM season_users s, config c ' + 
 'WHERE c.status =\'active\' ' +
 'AND s.season = JSON_VALUE(c.settings, \'$.currentSeason\') ' +
@@ -10,7 +12,7 @@ const queryMulligan = 'SELECT u.id ' +
 'AND s.user_id = ?';
 
 const queryGamesOver = 'SELECT g.game_id ' +
-'FROM config c, games g' + 
+'FROM config c, games g ' + 
 'WHERE c.status = \'active\' ' +   
 'AND g.season = JSON_VALUE(c.settings, \'$.currentSeason\') ' +
 'AND g.season_type = JSON_VALUE(c.settings, \'$.currentSeasonType\') ' +
@@ -19,7 +21,7 @@ const queryGamesOver = 'SELECT g.game_id ' +
 
 const queryUserCheck = 'SELECT u.user_id ' +
 'FROM users u ' + 
-'WHERE u.username = ? ' +
+'WHERE u.user_name = ? ' +
 'AND u.user_id = ?';
 
 var statusEnum = {
@@ -37,11 +39,14 @@ PolicyDeleteWeek.policy = async function policy (userId, token) {
     var userToken = jwtDecode(token)
     var username = userToken['cognito:username'];
 
-    const userCheck = await fetch(queryUserCheck, [username, userId])
-    const mulligan = await fetch(queryMulligan, [userId]);
-    const gamesOver = await fetch(queryGamesOver);
+    const userCheck = await fetch.query(queryUserCheck, [username, userId])
+    const mulligan = await fetch.query(queryMulligan, [userId]);
+    const gamesOver = await fetch.query(queryGamesOver);
 
-    if (userCheck.length !== 0 && mulligan.length !== 0 && gamesOver.length !== 0) {
+    if (
+        userCheck?.length !== 0 && 
+        mulligan?.length !== 0 && 
+        gamesOver?.length !== 0) {
         return {status: statusEnum.SUCCESS}
     }
 

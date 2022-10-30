@@ -4,16 +4,16 @@ var queries = require('../utils/queries');
 var shared = require('picks-app-shared');
 
 var CurrentSeasonData = function(currSeasonData) {
-    this.max_picks      = currSeasonData.max_picks == null ? 0 : currSeasonData.max_picks;
-    this.picks_penalty  = currSeasonData.picks_penalty == null ? 0 : currSeasonData.picks_penalty;
-    this.pending_picks  = currSeasonData.pending_picks == null ? 0 : currSeasonData.pending_picks;
-    this.picks          = currSeasonData.picks == null ? 0 : currSeasonData.picks;
-    this.ranking        = currSeasonData.ranking == null ? 0 : currSeasonData.ranking;
-    this.wins           = currSeasonData.wins == null ? 0 : currSeasonData.wins;
-    this.win_pct        = currSeasonData.win_pct == null ? 0 : currSeasonData.win_pct;
-    this.prev_ranking   = currSeasonData.prev_ranking == null ? 0 : currSeasonData.prev_ranking;
-    this.bonus_nbr      = currSeasonData.bonus_nbr == null ? 0 : currSeasonData.bonus_nbr;
-    this.dropped_week   = currSeasonData.dropped_week == null ? null : currSeasonData.dropped_week;
+    this.max_picks      = currSeasonData.max_picks == null ? 0 : parseInt(currSeasonData.max_picks);
+    this.picks_penalty  = currSeasonData.picks_penalty == null ? 0 : parseInt(currSeasonData.picks_penalty);
+    this.pending_picks  = currSeasonData.pending_picks == null ? 0 : parseInt(currSeasonData.pending_picks);
+    this.picks          = currSeasonData.picks == null ? 0 : parseInt(currSeasonData.picks);
+    this.ranking        = currSeasonData.ranking == null ? 0 : parseInt(currSeasonData.ranking);
+    this.wins           = currSeasonData.wins == null ? 0 : parseInt(currSeasonData.wins);
+    this.win_pct        = currSeasonData.win_pct == null ? 0 : parseInt(currSeasonData.win_pct);
+    this.prev_ranking   = currSeasonData.prev_ranking == null ? 0 : parseInt(currSeasonData.prev_ranking);
+    this.bonus_nbr      = currSeasonData.bonus_nbr == null ? 0 : parseInt(currSeasonData.bonus_nbr);
+    this.dropped_week   = currSeasonData.dropped_week == null ? null : parseInt(currSeasonData.dropped_week);
 }
 
 var User = function(userInfo, userCurrSeasonData) {

@@ -30,7 +30,8 @@ Pick.addPicks = async function addPicks(userId, picks, token) {
 } 
 
 Pick.deletePicksWeek = async function deletePicksWeek(season, seasonType, week, userId, token) {
-    await shared.policyDeleteWeek(userId, token);
+    const something = await shared.policyDeleteWeek(userId, token);
+    console.log("something::", something);
     await shared.fetch(queries.DELETE_PICKS_WEEK, [userId, season, seasonType, week]);
     return {status: statusEnum.SUCCESS};
 }
