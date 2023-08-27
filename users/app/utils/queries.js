@@ -19,7 +19,7 @@ var queries = {
     ALL_USERS : 'SELECT * ' + 
     'FROM users',
 
-    USER_DETAILS : 'SELECT s.max_picks, s.picks_penalty, r.pending_picks, r.picks,  r.ranking, r.wins, r.win_pct ' +
+    USER_DETAILS : 'SELECT s.max_picks, s.picks_penalty, r.pending_picks, r.picks,  r.ranking, r.wins, r.win_pct, s.dropped_week ' +
     'FROM season_users s, config c, rpt_user_stats r ' + 
     'WHERE c.status = \'active\' ' +   
     'AND s.season = JSON_VALUE(c.settings, \'$.currentSeason\') ' +
@@ -35,6 +35,14 @@ var queries = {
 
     USER_UPDATE_IMG : 'UPDATE users SET ' +
     'slack_user_image = ? ' +
+    'WHERE user_id = ?',
+
+    GET_BONUS_USERS : 'CALL get_user_results(?,?,?)',
+
+    GET_USERS_BY_ID : 'SELECT * FROM users WHERE user_id in (?)',
+
+    USER_SLACK_ID : 'UPDATE users SET ' +
+    'slack_user_id = ? ' + 
     'WHERE user_id = ?'
 }
 

@@ -2,26 +2,27 @@
 
 var Pick = require('../model/pickModel.js');
 
-exports.addPicks = function(req, res) {
-    Pick.addPicks(req.params.userId, req.body, req.headers.authorization, function(err, status) {
-        if(err) {
-            res.status(500).send({error: true, message: "Error adding picks", content: err});
-        } else {
-            res.json(status);
-        }
-    })
+exports.addPicks = async function(req, res) {
+    var status = await Pick.addPicks(req.params.userId, req.body, req.headers.authorization);
+    res.json(status);
 }
 
-exports.updatePicks = function(req, res) {
-    Pick.updatePicks(req.body, req.headers.authorization, function(err, status) {
-        if(err) return res.status(500).send({error: true, message: "Error updating pick", content: err});
-        res.json(status);
-    })
+exports.updatePicks = async function(req, res) {
+    var status = await Pick.updatePicks(req.body, req.headers.authorization);
+    res.json(status);
 }
 
-exports.deletePicks = function(req, res) {
-    Pick.deletePick(req.body, req.headers.authorization, function(err, status) {
-        if(err) return res.status(500).send({error: true, message: "Error updating pick", content: err});
-        res.json(status);
-    })
+exports.deletePicks = async function(req, res) {
+    var status = await Pick.deletePick(req.body, req.headers.authorization);
+    res.json(status);
+}
+
+exports.deletePicksWeek = async function(req, res) {
+    var status = await Pick.deletePicksWeek(
+        req.query.season,
+        req.query.seasonType,
+        req.query.week,
+        req.query.user,
+        req.headers.authorization);
+    res.json(status);
 }

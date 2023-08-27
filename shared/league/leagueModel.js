@@ -20,12 +20,9 @@ var League = function(league){
     }
 }
 
-League.leagueSettings = function leagueSettings(result){
-    
-    fetch.query(query, [], function(err, res){
-            if(err) result(err, null);
-            result(null, JSON.parse(res[0].settings));
-    });
+League.leagueSettings = async function leagueSettings(){
+    let res = await fetch.query(query, []);
+    return res[0].settings;
 };
 
 module.exports = League;

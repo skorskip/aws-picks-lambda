@@ -29,7 +29,9 @@ var queries = {
     "AND g.season_type = ? " +
     "AND p.user_id = ? " +
     "AND g.pick_submit_by_date < ? " +
-    "ORDER BY g.start_time ASC"
+    "ORDER BY g.start_time ASC",
+
+    DELETE_PICKS_WEEK: "CALL drop_user_picks(?,?,?,?)"
 
 }
 

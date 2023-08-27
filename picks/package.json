@@ -1,6 +1,6 @@
 {
   "name": "yes",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,7 +16,7 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.3",
     "jwt-decode": "^3.1.2",
-    "picks-app-shared": "^2.10.3",
+    "picks-app-shared": "^5.0.5",
     "request": "^2.88.2"
   }
 }

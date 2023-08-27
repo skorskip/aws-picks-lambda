@@ -1,25 +1,16 @@
 'use strict'
 
-var mysql = require('mysql');
+var mysql = require('mysql2/promise');
 var config = require('./config');
 
 var Fetch = function(){}; 
 
-Fetch.query = function query(query, params, result) {
-    var sql = mysql.createConnection(config);
-
-    sql.connect(function(connectErr){
-        if (connectErr) {
-            result(connectErr, null);
-        }
-        sql.query(query, params, function(err, res){
-            sql.destroy();
-            if(err) {
-                result(err, null);
-            }
-            result(null, res)
-        });
-    });
+Fetch.query = async function query(query, params) {
+    var sql = await mysql.createConnection(config);
+    var statement = sql.format(query, params);
+    var [result, _]  = await sql.execute(statement);
+    await sql.end();
+    return result;
 }
 
 module.exports = Fetch;

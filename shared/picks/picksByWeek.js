@@ -21,14 +21,11 @@ var PicksByWeek = function(picksByWeek) {
     this.pick_submit_by_date = picksByWeek.pick_submit_by_date;
 }
 
-PicksByWeek.getPicksByWeek = function getPicksByWeek(season, seasonType, week, token, result) {
+PicksByWeek.getPicksByWeek = async function getPicksByWeek(season, seasonType, week, token) {
     var userToken = jwtDecode(token)
     var username = userToken['cognito:username'];
-    
-    fetch.query(query, [season, week, seasonType, username], function(err, res) {
-        if(err) console.error(err);
-        result(null, res);
-    });
+    let res = await fetch.query(query, [season, week, seasonType, username]);
+    return res;
 }
 
 module.exports = PicksByWeek;
