@@ -24,27 +24,27 @@ updateAllFunction()
 
     cp ./$environment/league-claudia.json ../league/claudia.json
     cd ../league
-    claudia update --profile $environment
+    claudia update --profile $environment --runtime nodejs18.x
     cd ../configs
     
     cp ./$environment/messages-claudia.json ../messages/claudia.json
     cd ../messages
-    claudia update --profile $environment
+    claudia update --profile $environment --runtime nodejs18.x
     cd ../configs
     
     cp ./$environment/picks-claudia.json ../picks/claudia.json
     cd ../picks
-    claudia update --profile $environment
+    claudia update --profile $environment --runtime nodejs18.x
     cd ../configs
     
     cp ./$environment/users-claudia.json ../users/claudia.json
     cd ../users
-    claudia update --profile $environment
+    claudia update --profile $environment --runtime nodejs18.x
     cd ../configs
 
     cp ./$environment/week-claudia.json ../week/claudia.json
     cd ../week
-    claudia update --profile $environment
+    claudia update --profile $environment --runtime nodejs18.x
     cd ../configs
 }
 
@@ -74,7 +74,7 @@ if [ $action == "update" ]; then
     else
         cp ./$environment/$file-claudia.json ../$file/claudia.json
         cd ../$file
-        claudia update --profile $environment
+        claudia update --profile $environment --runtime nodejs18.x
     fi
 
 elif [ $action == "create" ]; then

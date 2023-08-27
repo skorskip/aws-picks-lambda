@@ -44,9 +44,9 @@ PolicyDeleteWeek.policy = async function policy (userId, token) {
     const gamesOver = await fetch.query(queryGamesOver);
 
     if (
-        userCheck?.length !== 0 && 
-        mulligan?.length !== 0 && 
-        gamesOver?.length !== 0) {
+        (userCheck || []).length !== 0 && 
+        (mulligan || []).length !== 0 && 
+        (gamesOver || []).length !== 0) {
         return {status: statusEnum.SUCCESS}
     }
 

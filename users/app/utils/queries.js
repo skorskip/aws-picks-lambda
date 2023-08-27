@@ -35,6 +35,14 @@ var queries = {
 
     USER_UPDATE_IMG : 'UPDATE users SET ' +
     'slack_user_image = ? ' +
+    'WHERE user_id = ?',
+
+    GET_BONUS_USERS : 'CALL get_user_results(?,?,?)',
+
+    GET_USERS_BY_ID : 'SELECT * FROM users WHERE user_id in (?)',
+
+    USER_SLACK_ID : 'UPDATE users SET ' +
+    'slack_user_id = ? ' + 
     'WHERE user_id = ?'
 }
 

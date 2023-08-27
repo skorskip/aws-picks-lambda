@@ -29,6 +29,9 @@ app.get('/login', runAsyncWrapper(async (req, res) => users.login(req, res)));
 // standings?season={season}&seasonType={seasonType}&week={week}
 app.get('/standings', runAsyncWrapper(async (req, res) => users.getAllUsers(req, res)));
 app.get('/update-user-profile', runAsyncWrapper(async (req, res) => users.updateUserProfile(req, res)));
+app.post('/add-slack-id', runAsyncWrapper(async (req, res) => users.addSlackId(req, res)));
+// bonus-streak?season={season}&seasonType={seasonType}&week={week}
+app.get('/bonus-streak', runAsyncWrapper(async (req, res) => users.getBonusUsers(req, res)));
 
 if(process.env.NODE_ENV === 'local') {
     app.listen(3004, () => console.log('Ready'));

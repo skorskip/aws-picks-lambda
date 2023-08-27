@@ -31,3 +31,13 @@ exports.updateUserProfile = async function(req, res) {
     var updateResult = await User.updateUserImage(req.headers.authorization);
     res.json(updateResult);
 };
+
+exports.addSlackId = async function(req, res) {
+    var updateResult = await User.addUserSlackId(req.body, req.headers.authorization);
+    res.json(updateResult);
+}
+
+exports.getBonusUsers = async function(req, res) {
+    var users = await User.getBonusUsers(req.query.season, req.query.seasonType, req.query.week);
+    res.json(users);
+}

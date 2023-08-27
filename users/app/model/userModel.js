@@ -3,6 +3,22 @@ var jwtDecode = require('jwt-decode');
 var queries = require('../utils/queries');
 var shared = require('picks-app-shared');
 
+var StatusEnum = {
+    FAILURE : "FAILURE",
+    SUCCESS : "SUCCESS",
+    UNAUTHORIZED : "UNAUTHORIZED",
+    COGNITO_USER : "cognito:username"
+}
+
+var BonusStatusEnum = {
+    GAME_IN_PROGRESS: "GIP",
+    DISQUALIFIED: "DQ",
+    NOT_QUALIFY: "DNQ",
+    QUALIFIED: "QUAL",
+    WON: "WON",
+    QUALIFY_IN_PROGRESS: "QIP"
+}
+
 var CurrentSeasonData = function(currSeasonData) {
     this.max_picks      = currSeasonData.max_picks == null ? 0 : parseInt(currSeasonData.max_picks);
     this.picks_penalty  = currSeasonData.picks_penalty == null ? 0 : parseInt(currSeasonData.picks_penalty);
@@ -28,13 +44,6 @@ var User = function(userInfo, userCurrSeasonData) {
     this.slack_user_id = userInfo.slack_user_id;
     this.slack_user_image = userInfo.slack_user_image;
     this.current_season_data = userCurrSeasonData == null ? null : new CurrentSeasonData(userCurrSeasonData);
-}
-
-var StatusEnum = {
-    FAILURE : "FAILURE",
-    SUCCESS : "SUCCESS",
-    UNAUTHORIZED : "UNAUTHORIZED",
-    COGNITO_USER : "cognito:username"
 }
 
 User.updateUser = async function updateUser(userId, user) {
@@ -111,6 +120,30 @@ User.updateUserImage = async function updateUserImage(token) {
     var slackProfile = await shared.slackProfile(users[0].slack_user_id);
     await shared.fetch(queries.USER_UPDATE_IMG, [slackProfile.imageURL, users[0].user_id]);
     return StatusEnum.SUCCESS;
+}
+
+User.addUserSlackId = async function addUserSlackId(request, token) {
+    var userToken = jwtDecode(token);
+    var username = userToken[StatusEnum.COGNITO_USER]; 
+    var users = await shared.fetch(queries.LOGIN_USER, [username.toLowerCase()]);
+    var slackId = await shared.slackProfileByEmail(request?.email);
+    await shared.fetch(queries.USER_SLACK_ID, [slackId.userId, users[0].user_id]);
+    return {slackId};
+}
+
+User.getBonusUsers = async function getBonusUsers(season, seasonType, week) {
+    var bonusUsers = await shared.fetch(queries.GET_BONUS_USERS, [season, seasonType, week]);
+    var users = bonusUsers[0].filter(
+        user => (user.bonus_status !== BonusStatusEnum.DISQUALIFIED 
+            && user.bonus_status !== BonusStatusEnum.NOT_QUALIFY));
+    return await User.getUsersByIds(users.map(user => user.user_id));
+}
+
+User.getUsersByIds = async function getUsersByIds(userIds) {
+    if(userIds.length !== 0) {
+        return await shared.fetch(queries.GET_USERS_BY_ID, [userIds]);
+    }
+    return [];
 }
 
 module.exports = User;

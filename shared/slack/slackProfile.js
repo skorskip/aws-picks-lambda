@@ -14,4 +14,14 @@ Slack.slackProfile = async function slackProfile(userId) {
     return {status: "SUCCESS", imageURL: image};
 }
 
+Slack.slackProfileByEmail = async function slackByEmail(email) {
+    let settings = await league.leagueSettings();
+    const token = settings.messageSource.token;
+    const web = new WebClient(token);
+    const response = await web.users.lookupByEmail({email});
+
+    let userId = response.user.id;
+    return {status: "SUCCESS", userId: userId};
+}
+
 module.exports = Slack;

@@ -56,6 +56,11 @@ exports.team  = async function(teamIds) {
     return res;
  }
 
+ exports.slackProfileByEmail = async function(email) {
+    var res = await Slack.slackProfileByEmail(email);
+    return res;
+ }
+
  exports.fetch = async function(query, params) {
      var res = await Fetch.query(query, params);
      return res;
