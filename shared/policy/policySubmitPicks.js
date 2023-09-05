@@ -1,14 +1,15 @@
 'use strict'
 var fetch = require('../db/fetch');
 
-const query = 'SELECT s.user_type, s.max_picks, COUNT(p.pick_id) as picks' +
-    'FROM season_users s, config c, picks p, games g' + 
+const query = 'SELECT s.user_type, s.max_picks, COUNT(p.pick_id) as picks ' +
+    'FROM season_users s, config c, picks p, games g ' + 
     'WHERE c.status = \'active\' ' +   
     'AND s.season = JSON_VALUE(c.settings, \'$.currentSeason\') ' +
     'AND s.season_type = JSON_VALUE(c.settings, \'$.currentSeasonType\') ' +
     'AND g.season = JSON_VALUE(c.settings, \'$.currentSeason\') ' +
     'AND g.season_type = JSON_VALUE(c.settings, \'$.currentSeasonType\') ' +
     'AND g.game_id = p.game_id ' + 
+    'AND (g.winning_team_id is not null OR g.game_status <> \'COMPLETED\') ' +
     'AND s.user_id = ? ' +
     'AND p.user_id = ?';
 

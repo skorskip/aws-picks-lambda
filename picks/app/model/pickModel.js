@@ -30,8 +30,10 @@ Pick.addPicks = async function addPicks(userId, picks, token) {
 } 
 
 Pick.deletePicksWeek = async function deletePicksWeek(season, seasonType, week, userId, token) {
-    await shared.policyDeleteWeek(userId, token);
-    await shared.fetch(queries.DELETE_PICKS_WEEK, [userId, season, seasonType, week]);
+    const deleteResult = await shared.fetch(queries.DELETE_PICKS_WEEK, [userId, season, seasonType, week]);
+    if (deleteResult[0].includes('ERROR:')) {
+        throw {status: statusEnum.ERROR}
+    }
     return {status: statusEnum.SUCCESS};
 }
 
@@ -45,7 +47,7 @@ Pick.addPicksSQL = async function addPicksSQL(picks) {
 Pick.deletePick = async function deletePick(picks, token) {
     var games = await shared.game(picks.map(pick => pick.game_id));
     await shared.policyEditPicks(games);
-    await shared.fetch(queries.DELETE_PICKS, [picks]);
+    await shared.fetch(queries.DELETE_PICKS, [picks.map(p => p.pick_id)]);
     return await Pick.getCurrentPicks(token);
 }
 

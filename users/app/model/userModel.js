@@ -26,10 +26,11 @@ var CurrentSeasonData = function(currSeasonData) {
     this.picks          = currSeasonData.picks == null ? 0 : parseInt(currSeasonData.picks);
     this.ranking        = currSeasonData.ranking == null ? 0 : parseInt(currSeasonData.ranking);
     this.wins           = currSeasonData.wins == null ? 0 : parseInt(currSeasonData.wins);
-    this.win_pct        = currSeasonData.win_pct == null ? 0 : parseInt(currSeasonData.win_pct);
+    this.win_pct        = currSeasonData.win_pct == null ? 0 : parseFloat(currSeasonData.win_pct);
     this.prev_ranking   = currSeasonData.prev_ranking == null ? 0 : parseInt(currSeasonData.prev_ranking);
     this.bonus_nbr      = currSeasonData.bonus_nbr == null ? 0 : parseInt(currSeasonData.bonus_nbr);
     this.dropped_week   = currSeasonData.dropped_week == null ? null : parseInt(currSeasonData.dropped_week);
+    this.user_type      = currSeasonData.user_type;
 }
 
 var User = function(userInfo, userCurrSeasonData) {
@@ -87,14 +88,9 @@ User.login = async function login(token) {
 User.getAllUsers = async function getAllUsers(season, seasonType, week) {
     var allUsers = await shared.fetch(queries.ALL_USERS, []);
     var details = await User.getUserDetailsStorProc(season, seasonType, week);
-    var fullUsers = [];
-    
-    allUsers.forEach(user => {
-        var userDetail = details[0].find(detail => detail.user_id == user.user_id);
-        fullUsers.push(new User(user, userDetail));  
+    return allUsers.map(u => {
+        return new User(u, details[0].find(detail => detail.user_id == u.user_id));
     });
-    
-    return fullUsers;
 };
 
 User.updateView = async function updateView(season, seasonType, week) {
@@ -135,8 +131,10 @@ User.getBonusUsers = async function getBonusUsers(season, seasonType, week) {
     var bonusUsers = await shared.fetch(queries.GET_BONUS_USERS, [season, seasonType, week]);
     var users = bonusUsers[0].filter(
         user => (user.bonus_status !== BonusStatusEnum.DISQUALIFIED 
-            && user.bonus_status !== BonusStatusEnum.NOT_QUALIFY));
-    return await User.getUsersByIds(users.map(user => user.user_id));
+            && user.bonus_status !== BonusStatusEnum.NOT_QUALIFY
+            && user.bonus_status !== BonusStatusEnum.GAME_IN_PROGRESS));
+    var bonusUserList = await User.getUsersByIds(users.map(user => user.user_id));
+    return bonusUserList?.map(u => ({...u, wins: (users?.find(ub => ub.user_id === u.user_id)?.wins || 0)}));
 }
 
 User.getUsersByIds = async function getUsersByIds(userIds) {
