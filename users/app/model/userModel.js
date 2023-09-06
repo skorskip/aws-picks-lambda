@@ -88,8 +88,9 @@ User.login = async function login(token) {
 User.getAllUsers = async function getAllUsers(season, seasonType, week) {
     var allUsers = await shared.fetch(queries.ALL_USERS, []);
     var details = await User.getUserDetailsStorProc(season, seasonType, week);
-    return allUsers.map(u => {
-        return new User(u, details[0].find(detail => detail.user_id == u.user_id));
+    
+    return details[0].map(d => {
+        return new User(allUsers.find(u => u.user_id === d.user_id), d);
     });
 };
 

@@ -1,16 +1,20 @@
 'use strict'
 var fetch = require('../db/fetch');
 
-const query = 'SELECT s.user_type, s.max_picks, COUNT(p.pick_id) as picks ' +
-    'FROM season_users s, config c, picks p, games g ' + 
+const query = 'SELECT s.user_type, s.max_picks ' +
+    'FROM season_users s, config c ' + 
     'WHERE c.status = \'active\' ' +   
     'AND s.season = JSON_VALUE(c.settings, \'$.currentSeason\') ' +
     'AND s.season_type = JSON_VALUE(c.settings, \'$.currentSeasonType\') ' +
+    'AND s.user_id = ?';
+
+const queryPicks = 'SELECT COUNT(p.pick_id) as picks ' +
+    'FROM config c, picks p, games g ' + 
+    'WHERE c.status = \'active\' ' +   
     'AND g.season = JSON_VALUE(c.settings, \'$.currentSeason\') ' +
     'AND g.season_type = JSON_VALUE(c.settings, \'$.currentSeasonType\') ' +
     'AND g.game_id = p.game_id ' + 
     'AND (g.winning_team_id is not null OR g.game_status <> \'COMPLETED\') ' +
-    'AND s.user_id = ? ' +
     'AND p.user_id = ?';
 
 var messageEnum = {
@@ -24,10 +28,10 @@ var statusEnum = {
     SUCCESS: 'SUCCESS',
     ERROR: 'ERROR'
 }
-var UserDetail = function(userDetail) {
+var UserDetail = function(userDetail, userPicks) {
     this.user_type = userDetail.user_type;
     this.max_picks = userDetail.max_picks;
-    this.picks = userDetail.picks;
+    this.picks = userPicks.picks;
 }
 
 var PolicySubmitPicks = function() {}
@@ -37,8 +41,7 @@ PolicySubmitPicks.policy = async function policy(userId, games) {
         throw {status: statusEnum.ERROR, message: messageEnum.NO_PICKS};
     }
 
-    var detailObj = await this.getDetailedUserInfo(userId);
-    var userInfo = new UserDetail(detailObj);
+    var userInfo = await this.getDetailedUserInfo(userId);
     var totalPicks = games.length + userInfo.picks;
 
     if(games.find((game) => new Date(game.pick_submit_by_date) < new Date())) {
@@ -60,8 +63,10 @@ PolicySubmitPicks.policy = async function policy(userId, games) {
 }
 
 PolicySubmitPicks.getDetailedUserInfo = async function getDetailedUserInfo(userId) {
-    var res = await fetch.query(query,[userId, userId]);
-    return res[0];
+    var res = await fetch.query(query,[userId]);
+    var resPicks = await fetch.query(queryPicks, [userId]);
+
+    return new UserDetail(res[0], resPicks[0]);
 }
 
 module.exports = PolicySubmitPicks;
