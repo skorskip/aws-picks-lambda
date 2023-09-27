@@ -130,10 +130,13 @@ User.addUserSlackId = async function addUserSlackId(request, token) {
 
 User.getBonusUsers = async function getBonusUsers(season, seasonType, week) {
     var bonusUsers = await shared.fetch(queries.GET_BONUS_USERS, [season, seasonType, week]);
-    var users = bonusUsers[0].filter(
-        user => (user.bonus_status !== BonusStatusEnum.DISQUALIFIED 
-            && user.bonus_status !== BonusStatusEnum.NOT_QUALIFY
-            && user.bonus_status !== BonusStatusEnum.GAME_IN_PROGRESS));
+    var users = bonusUsers[0].filter(user => user.bonus_status === BonusStatusEnum.WON);
+    if (users.length === 0) {
+        users = bonusUsers[0].filter(
+            user => (user.bonus_status !== BonusStatusEnum.DISQUALIFIED 
+                && user.bonus_status !== BonusStatusEnum.NOT_QUALIFY
+                && user.bonus_status !== BonusStatusEnum.GAME_IN_PROGRESS));
+    }
     var bonusUserList = await User.getUsersByIds(users.map(user => user.user_id));
     return bonusUserList?.map(u => ({...u, wins: (users?.find(ub => ub.user_id === u.user_id)?.wins || 0)}));
 }
